@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
+import styles from "./page.module.css";
 import Link from 'next/link';
 
 const geistSans = Geist({
@@ -27,18 +27,18 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr">
-      <body>
-        <header style={{ padding: '1rem', background: '#f5f5f5' }}>
-          <nav style={{ display: 'flex', gap: '1rem' }}>
-            <Link href="/">🏠 Accueil</Link>
-            <Link href="/camera">📷 Caméra</Link>
-            <Link href="/profile">🧑 Mon Profil</Link>
-            <Link href="/conversations">💬 Conversations</Link>
-            <Link href="/chat/create">➕ Créer Chat</Link>
-            <Link href="/chat/join">📡 Rejoindre Chat</Link>
+      <body className={styles.body}>
+        <header className={styles.header}>
+          <nav className={styles.nav}>
+            <Link href="/" className={styles.navLink}>🏠 Accueil</Link>
+            <Link href="/camera" className={styles.navLink}>📷 Caméra</Link>
+            <Link href="/profile" className={styles.navLink}>🧑 Mon Profil</Link>
+            <Link href="/conversations" className={styles.navLink}>💬 Conversations</Link>
+            <Link href="/chat/create" className={styles.navLink}>➕ Créer Chat</Link>
+            <Link href="/chat/join" className={styles.navLink}>📡 Rejoindre Chat</Link>
           </nav>
         </header>
-        <main style={{ padding: '2rem' }}>
+        <main className={styles.main}>
           {children}
         </main>
       </body>
