@@ -52,6 +52,10 @@ export default function CameraPage() {
     const stored = JSON.parse(localStorage.getItem('photos') || '[]');
     stored.push(dataUrl);
     localStorage.setItem('photos', JSON.stringify(stored));
+
+    localStorage.setItem('lastTakenPhoto', dataUrl);
+
+    window.location.href = '/profile';
   };
 
   useEffect(() => {
