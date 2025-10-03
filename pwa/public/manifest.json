@@ -1,6 +1,6 @@
 {
-  "name": "Nom de votre App",
-  "short_name": "NomCourt",
+  "name": "PWA - CHAT",
+  "short_name": "PWAChat",
   "description": "Description de votre PWA",
   "start_url": "/",
   "display": "standalone",
@@ -10,12 +10,12 @@
     {
       "src": "/icons/logo.svg",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/svg+xml"
     },
     {
       "src": "/icons/logo.svg",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/svg+xml"
     }
   ]
 }
