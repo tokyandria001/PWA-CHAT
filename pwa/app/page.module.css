@@ -8,7 +8,6 @@
   font-family: var(--font-geist-sans), sans-serif;
 }
 
-/* 🧭 Header */
 .header {
   background-color: #ffffff;
   border-bottom: 1px solid #e0e0e0;
@@ -19,7 +18,6 @@
   z-index: 1000;
 }
 
-/* 📚 Navigation */
 .nav {
   display: flex;
   flex-wrap: wrap;
@@ -39,7 +37,6 @@
   text-decoration: underline;
 }
 
-/* 🧱 Main content */
 .main {
   max-width: 1200px;
   margin: 0 auto;
@@ -98,4 +95,76 @@
   text-align: center;
   font-style: italic;
   color: #555;
+}
+
+
+/* Caméra */
+
+.buttonGroup {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.button {
+  background-color: #1a73e8;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.button:hover {
+  background-color: #1666c1;
+}
+
+.videoContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  background-color: #000;
+  border-radius: 10px;
+  overflow: hidden;
+  height: auto;
+  margin-bottom: 2rem;
+}
+
+.video {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  border-radius: 10px;
+}
+
+.videoHidden {
+  display: none;
+}
+
+.canvas {
+  display: none;
+}
+
+.photoPreview {
+  text-align: center;
+  margin-top: 2rem;
+}
+
+.photoPreview h2 {
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
+  color: #444;
+}
+
+.image {
+  max-width: 100%;
+  height: auto;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border: 2px solid #e0e0e0;
 }
