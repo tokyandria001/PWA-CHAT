@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 export default function Home() {
   return (
     <main className="container">
@@ -14,9 +16,13 @@ export default function Home() {
         <li>Stockage local (localStorage)</li>
       </ul>
       <div style={{ textAlign: 'center' }}>
-        <a href="/profile" className="button" style={{ textDecoration: 'none' }}>
+        <Link
+          href="/profile"
+          className="button"
+          style={{ textDecoration: 'none' }}
+        >
           Commencer →
-        </a>
+        </Link>
       </div>
     </main>
   );
