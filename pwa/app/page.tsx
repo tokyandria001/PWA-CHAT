@@ -1,27 +1,23 @@
-import styles from "./page.module.css";
-
 export default function Home() {
   return (
-    <div className={styles.container}>
-      <h1 className={styles.title}>
-        TP – Progressive Web App : Client de messagerie instantanée
-      </h1>
-
-      <p className={styles.description}>
-        Bienvenue dans votre application PWA de messagerie. Voici les fonctionnalités disponibles :
+    <main className="container">
+      <h1 className="title">Bienvenue sur ChatCam</h1>
+      <p className="description">
+        Une Progressive Web App pour discuter, prendre des photos, et partager !
       </p>
-
-      <ul className={styles.featuresList}>
-        <li>Prendre une photo avec la caméra (PWA, notifications, stockage local)</li>
-        <li>Modifier sa fiche utilisateur (offline)</li>
-        <li>Voir les anciennes conversations (offline)</li>
-        <li>Voir les pièces jointes (offline)</li>
-        <li>Créer ou rejoindre un chat (en ligne)</li>
+      <h2>Technologies utilisées :</h2>
+      <ul className="featuresList">
+        <li>Next.js 13 (App Router)</li>
+        <li>TypeScript</li>
+        <li>React</li>
+        <li>Service Workers + PWA (via next-pwa)</li>
+        <li>Stockage local (localStorage)</li>
       </ul>
-
-      <p className={styles.footerText}>
-        Utilisez le menu ci-dessus pour accéder aux différentes sections de l'application.
-      </p>
-    </div>
+      <div style={{ textAlign: 'center' }}>
+        <a href="/profile" className="button" style={{ textDecoration: 'none' }}>
+          Commencer →
+        </a>
+      </div>
+    </main>
   );
 }

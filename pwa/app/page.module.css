@@ -1,6 +1,4 @@
-/* NavBar */
-
-.body {
+body {
   margin: 0;
   padding: 0;
   background-color: #f7f9fc;
@@ -8,6 +6,7 @@
   font-family: var(--font-geist-sans), sans-serif;
 }
 
+/* Header and NavBar */
 .header {
   background-color: #ffffff;
   border-bottom: 1px solid #e0e0e0;
@@ -37,14 +36,14 @@
   text-decoration: underline;
 }
 
+/* Main container */
 .main {
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
 }
 
-
-/* Page d'accueil */
+/* Container used on pages */
 .container {
   max-width: 800px;
   margin: 0 auto;
@@ -56,6 +55,7 @@
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
 }
 
+/* Titles and texts */
 .title {
   font-size: 2rem;
   margin-bottom: 1rem;
@@ -97,9 +97,7 @@
   color: #555;
 }
 
-
-/* Caméra */
-
+/* Buttons */
 .buttonGroup {
   display: flex;
   justify-content: center;
@@ -117,12 +115,14 @@
   font-size: 1rem;
   cursor: pointer;
   transition: background-color 0.2s ease;
+  text-align: center;
 }
 
 .button:hover {
   background-color: #1666c1;
 }
 
+/* Camera section */
 .videoContainer {
   display: flex;
   justify-content: center;
@@ -169,9 +169,7 @@
   border: 2px solid #e0e0e0;
 }
 
-
-/* Profil */
-
+/* Profile form styles */
 .formGroup {
   margin-bottom: 1.5rem;
 }
@@ -259,6 +257,7 @@
   font-weight: bold;
 }
 
+/* Profile card */
 .profileWrapper {
   display: flex;
   justify-content: center;

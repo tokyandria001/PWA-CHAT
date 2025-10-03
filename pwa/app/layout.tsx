@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import styles from "./page.module.css";
 import Link from 'next/link';
+import './globals.css';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,11 +32,7 @@ export default function RootLayout({
         <header className={styles.header}>
           <nav className={styles.nav}>
             <Link href="/" className={styles.navLink}>🏠 Accueil</Link>
-            <Link href="/camera" className={styles.navLink}>📷 Caméra</Link>
-            <Link href="/profile" className={styles.navLink}>🧑 Mon Profil</Link>
-            <Link href="/conversations" className={styles.navLink}>💬 Conversations</Link>
-            <Link href="/chat/create" className={styles.navLink}>➕ Créer Chat</Link>
-            <Link href="/chat/join" className={styles.navLink}>📡 Rejoindre Chat</Link>
+            <Link href="/profile" className={styles.navLink}>🧑 Connexion</Link>
           </nav>
         </header>
         <main className={styles.main}>
