@@ -1,152 +1,244 @@
-'use client';
+"use client";
 
-import { useState, useRef, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, useRef } from "react";
 
-export default function ReceptionPage() {
-  const [pseudo, setPseudo] = useState('');
+export default function Reception() {
+  const [pseudo, setPseudo] = useState("");
   const [photo, setPhoto] = useState<string | null>(null);
-  const [rooms, setRooms] = useState(['General', 'Tech', 'Random']);
-  const [selectedRoom, setSelectedRoom] = useState('');
+  const [rooms, setRooms] = useState<string[]>(["Général", "Développement", "Projet"]);
+  const [photos, setPhotos] = useState<string[]>([]);
+
+  // 🎥 Gestion caméra
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const [preview, setPreview] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [stream, setStream] = useState<MediaStream | null>(null);
-  const [cameraOn, setCameraOn] = useState(false);
+  const streamRef = useRef<MediaStream | null>(null);
 
-  const router = useRouter();
-
-  const startCamera = async () => {
-    try {
-      const mediaStream = await navigator.mediaDevices.getUserMedia({ video: true });
-      if (videoRef.current) videoRef.current.srcObject = mediaStream;
-      setStream(mediaStream);
-      setCameraOn(true);
-    } catch (error) {
-      alert("Impossible d'accéder à la caméra");
+  // Charger profil + galerie depuis localStorage
+  useEffect(() => {
+    const storedProfile = localStorage.getItem("profile");
+    if (storedProfile) {
+      const parsed = JSON.parse(storedProfile);
+      setPseudo(parsed.pseudo || "");
+      setPhoto(parsed.photo || null);
     }
+
+    const storedPhotos = localStorage.getItem("photos");
+    if (storedPhotos) {
+      setPhotos(JSON.parse(storedPhotos));
+    }
+  }, []);
+
+  // Sauvegarde profil
+  const saveProfile = () => {
+    localStorage.setItem("profile", JSON.stringify({ pseudo, photo }));
+    alert("Profil sauvegardé !");
   };
 
-  const stopCamera = () => {
-    if (stream) {
-      stream.getTracks().forEach(track => track.stop());
-      setStream(null);
+  // Ouvre la caméra
+  const openCamera = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+      streamRef.current = stream;
+      setIsCameraOpen(true);
+
+      // Attendre que le <video> soit monté
+      setTimeout(() => {
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          videoRef.current.play().catch(err => console.error("Erreur lecture vidéo :", err));
+        }
+      }, 100);
+    } catch (err) {
+      alert("Erreur : impossible d'accéder à la caméra.");
+      console.error(err);
     }
-    setCameraOn(false);
   };
 
   const takePhoto = () => {
-    if (!videoRef.current || !canvasRef.current) return;
-
     const video = videoRef.current;
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
+    if (!video) return;
+
+    const canvas = document.createElement("canvas");
+    canvas.width = video.videoWidth || 640;
+    canvas.height = video.videoHeight || 480;
+
+    const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    const dataUrl = canvas.toDataURL('image/png');
-    setPhoto(dataUrl);
-    stopCamera();
+    const dataUrl = canvas.toDataURL("image/png");
+    setPreview(dataUrl);
   };
 
-  const retakePhoto = () => {
-    setPhoto(null);
-    startCamera();
+  // Sauvegarde la photo capturée
+  const savePhoto = () => {
+    if (!preview) return;
+
+    // ✅ Met à jour la photo de profil
+    setPhoto(preview);
+    localStorage.setItem("photo", preview);
+    localStorage.setItem("profile", JSON.stringify({ pseudo, photo: preview }));
+
+    // ✅ Ajoute à la galerie
+    const updatedPhotos = [preview, ...photos];
+    setPhotos(updatedPhotos);
+    localStorage.setItem("photos", JSON.stringify(updatedPhotos));
+
+    // 🔔 Notification
+    window.dispatchEvent(new Event("photo-taken"));
+
+    // Ferme la caméra et reset
+    closeCamera();
   };
 
-  useEffect(() => {
-    if (!photo) {
-      startCamera();
+  // Ferme la caméra proprement
+  const closeCamera = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((t) => t.stop());
     }
-    return () => stopCamera();
-  }, []);
+    setIsCameraOpen(false);
+    setPreview(null);
+  };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!pseudo.trim()) {
-      alert('Veuillez entrer un pseudo');
-      return;
+  // Vide la galerie
+  const clearGallery = () => {
+    if (confirm("Supprimer toutes les photos ?")) {
+      localStorage.removeItem("photos");
+      setPhotos([]);
     }
-    if (!photo) {
-      alert('Veuillez prendre une photo');
-      return;
-    }
-    if (!selectedRoom) {
-      alert('Veuillez sélectionner une salle');
-      return;
-    }
-
-    sessionStorage.setItem('username', pseudo);
-    sessionStorage.setItem('photo', photo);
-
-    router.push(`/room/${selectedRoom.toLowerCase()}`);
-
   };
 
   return (
-    <main className="container">
-      <h1 className="title" style={{ textAlign: 'center', marginBottom: '2rem' }}>Connexion</h1>
+    <main style={{ padding: "2rem" }}>
+      <h1>Connexion</h1>
 
-      <form onSubmit={handleSubmit}>
-        <div className="formGroup">
-          <label htmlFor="pseudo" className="label">Pseudo</label>
-          <input
-            type="text"
-            id="pseudo"
-            className="input"
-            value={pseudo}
-            onChange={(e) => setPseudo(e.target.value)}
-            placeholder="Votre pseudo"
-            required
-          />
+      <input
+        type="text"
+        placeholder="Votre pseudo"
+        value={pseudo}
+        onChange={(e) => setPseudo(e.target.value)}
+      />
+
+      {/* 📸 Bouton pour ouvrir la caméra */}
+      <button onClick={openCamera}>📸 Prendre une photo</button>
+
+      {photo && (
+        <div style={{ marginTop: "1rem" }}>
+          <h3>Photo de profil :</h3>
+          <img src={photo} alt="profil" width={100} style={{ borderRadius: "8px" }} />
         </div>
+      )}
 
-        <div className="formGroup">
-          <label className="label">Photo</label>
+      <button onClick={saveProfile} style={{ marginTop: "1rem" }}>
+        💾 Sauvegarder profil
+      </button>
 
-          {!photo ? (
+      <h2>Rooms disponibles</h2>
+      <ul>
+        {rooms.map((r) => (
+          <li key={r}>
+            <a href={`/room/${r}`}>➡️ {r}</a>
+          </li>
+        ))}
+      </ul>
+
+      {/* === Galerie === */}
+      <section style={{ marginTop: "2rem" }}>
+        <h2>🖼️ Galerie</h2>
+        {photos.length === 0 ? (
+          <p>Aucune photo enregistrée.</p>
+        ) : (
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))",
+              gap: "10px",
+              marginTop: "1rem",
+            }}
+          >
+            {photos.map((p, i) => (
+              <img
+                key={i}
+                src={p}
+                alt={`photo-${i}`}
+                style={{
+                  width: "100%",
+                  borderRadius: "10px",
+                  boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
+                }}
+              />
+            ))}
+          </div>
+        )}
+
+        {photos.length > 0 && (
+          <button
+            onClick={clearGallery}
+            style={{
+              marginTop: "1rem",
+              backgroundColor: "#c62828",
+              color: "white",
+              border: "none",
+              padding: "0.5rem 1rem",
+              borderRadius: "5px",
+              cursor: "pointer",
+            }}
+          >
+            🗑️ Vider la galerie
+          </button>
+        )}
+      </section>
+
+      {/* === Modale Caméra === */}
+      {isCameraOpen && (
+        <div style={{
+          position: "fixed",
+          inset: 0,
+          background: "rgba(0,0,0,0.8)",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 999,
+        }}>
+          {!preview ? (
             <>
-              <div className="videoContainer">
-                <video ref={videoRef} autoPlay playsInline className={cameraOn ? 'video' : 'videoHidden'} />
+              <div style={{
+                width: 320,
+                height: 320,
+                border: "2px solid #0070f3",
+                borderRadius: 12,
+                overflow: "hidden",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}>
+                <video
+                  ref={videoRef}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  autoPlay
+                  playsInline
+                  muted
+                ></video>
               </div>
-              <canvas ref={canvasRef} className="canvas" />
-              <div className="buttonGroup" style={{ justifyContent: 'center' }}>
-                <button type="button" onClick={takePhoto} className="button">Prendre une photo</button>
+
+              <div style={{ marginTop: "1rem" }}>
+                <button onClick={takePhoto}>📷 Capturer</button>
+                <button onClick={closeCamera} style={{ marginLeft: "10px" }}>❌ Annuler</button>
               </div>
             </>
           ) : (
-            <div className="photoPreview">
-              <img src={photo} alt="Photo capturée" className="image" />
-              <div className="buttonGroup" style={{ justifyContent: 'center' }}>
-                <button type="button" onClick={retakePhoto} className="button">Reprendre</button>
+            <>
+              <img src={preview} alt="Aperçu" width={300} style={{ borderRadius: "10px" }} />
+              <div style={{ marginTop: "1rem" }}>
+                <button onClick={savePhoto}>✅ Utiliser cette photo</button>
+                <button onClick={() => setPreview(null)} style={{ marginLeft: "10px", backgroundColor: "#f57c00" }}>🔄 Reprendre</button>
               </div>
-            </div>
+            </>
           )}
         </div>
-
-        <div className="formGroup">
-          <label htmlFor="room" className="label">Choisir une salle</label>
-          <select
-            id="room"
-            className="input"
-            value={selectedRoom}
-            onChange={(e) => setSelectedRoom(e.target.value)}
-            required
-          >
-            <option value="">-- Sélectionnez une salle --</option>
-            {rooms.map(room => (
-              <option key={room} value={room}>{room}</option>
-            ))}
-          </select>
-        </div>
-
-        <div className="buttonGroup" style={{ justifyContent: 'center' }}>
-          <button type="submit" className="button">Se connecter</button>
-        </div>
-      </form>
+      )}
     </main>
   );
 }
