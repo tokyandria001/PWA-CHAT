@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import styles from "./page.module.css";
 import Link from 'next/link';
 import './globals.css';
+import NotificationManager from "./components/NotificationManager";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,6 +36,7 @@ export default function RootLayout({
             <Link href="/profile" className={styles.navLink}>🧑 Connexion</Link>
           </nav>
         </header>
+        <NotificationManager/>
         <main className={styles.main}>
           {children}
         </main>
