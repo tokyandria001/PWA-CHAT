@@ -1,241 +1,141 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useState, useEffect, useRef } from 'react';
+import { useParams, useRouter } from 'next/navigation';
 import { io, Socket } from 'socket.io-client';
 
-type ChatMessage = {
+type Message = {
   pseudo: string;
   content: string;
-  dateEmis: string;
   roomName: string;
-  categorie: 'MESSAGE' | 'INFO';
-  serverId: string;
+  dateEmis?: string;
 };
 
 export default function RoomPage() {
+  const { room } = useParams();
   const router = useRouter();
-  const params = useParams();
-  const room = typeof params.room === 'string' ? params.room : 'general';
-
-  const [pseudo, setPseudo] = useState<string | null>(null);
+  const [pseudo, setPseudo] = useState('');
   const [photo, setPhoto] = useState<string | null>(null);
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [input, setInput] = useState('');
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [content, setContent] = useState('');
   const socketRef = useRef<Socket | null>(null);
-  const chatRef = useRef<HTMLDivElement>(null);
-
-  // Connexion Socket.IO
-  useEffect(() => {
-    const storedProfile = localStorage.getItem('profile');
-    if (!storedProfile) {
-      router.replace('/reception');
-      return;
-    }
-
-    const parsed = JSON.parse(storedProfile);
-    const userPseudo = parsed.pseudo || 'Anonyme';
-    setPseudo(userPseudo);
-    setPhoto(parsed.photo || null);
-
-    const socket = io('https://api.tools.gavago.fr/socketio/', {
-      transports: ['websocket'],
-    });
-    socketRef.current = socket;
-
-    // Rejoindre la room
-    socket.emit('chat-join-room', {
-      pseudo: userPseudo,
-      roomName: room,
-    });
-
-    socket.on('connect', () => {
-      console.log('✅ Connecté au serveur Gavago');
-    });
-
-    socket.on('chat-msg', (msg: ChatMessage) => {
-      msg.dateEmis = new Date(msg.dateEmis).toLocaleTimeString();
-      setMessages(prev => [...prev, msg]);
-    });
-
-    socket.on('chat-joined-room', (data: any) => {
-      console.log(`👋 Nouvelle connexion dans ${data.roomName}`, data.clients);
-      const infoMsg: ChatMessage = {
-        pseudo: 'Serveur',
-        content: `Un nouvel utilisateur a rejoint la room ${data.roomName}.`,
-        dateEmis: new Date().toLocaleTimeString(),
-        roomName: data.roomName,
-        categorie: 'INFO',
-        serverId: 'system',
-      };
-      setMessages(prev => [...prev, infoMsg]);
-    });
-
-    socket.on('chat-disconnected', (data: any) => {
-      const infoMsg: ChatMessage = {
-        pseudo: 'Serveur',
-        content: `Un utilisateur s’est déconnecté.`,
-        dateEmis: new Date().toLocaleTimeString(),
-        roomName: data.roomName || room,
-        categorie: 'INFO',
-        serverId: 'system',
-      };
-      setMessages(prev => [...prev, infoMsg]);
-    });
-
-    socket.on('disconnect', () => {
-      console.log('❌ Déconnecté du serveur Gavago');
-    });
-
-    return () => {
-      socket.disconnect();
-    };
-  }, [router, room]);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Scroll automatique
   useEffect(() => {
-    if (chatRef.current) {
-      chatRef.current.scrollTop = chatRef.current.scrollHeight;
-    }
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const sendMessage = () => {
-    if (!input.trim() || !socketRef.current || !pseudo) return;
+  // Connexion socket
+  useEffect(() => {
+    const storedProfile = localStorage.getItem('profile');
+    if (!storedProfile) {
+      alert('Profil manquant, retour à la réception');
+      router.replace('/profile');
+      return;
+    }
+    const parsed = JSON.parse(storedProfile);
+    setPseudo(parsed.pseudo || 'Anonyme');
+    setPhoto(parsed.photo || null);
 
-    const message: ChatMessage = {
-      pseudo,
-      content: input.trim(),
-      dateEmis: new Date().toISOString(),
-      roomName: room,
-      categorie: 'MESSAGE',
-      serverId: 'clem_server',
+    const socket = io('https://api.tools.gavago.fr', {
+      transports: ['websocket'],
+      reconnection: false,
+    });
+    socketRef.current = socket;
+
+    socket.on('connect', () => {
+      console.log('✅ Connecté au serveur Socket.IO :', socket.id);
+      socket.emit('chat-join-room', { pseudo: parsed.pseudo, roomName: room });
+    });
+
+    socket.on('connect_error', (err) => {
+      if (!isLeavingRef.current) console.error('❌ Connect error :', err.message);
+    });
+
+    socket.on('chat-msg', (msg: Message) => {
+      msg.dateEmis = new Date().toLocaleTimeString();
+      setMessages(prev => [...prev, msg]);
+    });
+
+    return () => {
+      isLeavingRef.current = true; // Indique que c’est volontaire
+      socket.disconnect();
+      socketRef.current = null;
     };
+  }, [room, router]);
 
-    socketRef.current.emit('chat-msg', message);
-    setMessages(prev => [...prev, { ...message, dateEmis: new Date().toLocaleTimeString() }]);
-    setInput('');
+  const sendMessage = () => {
+    const trimmed = content.trim();
+    if (!trimmed || !socketRef.current) return;
+
+    socketRef.current.emit('chat-msg', {
+      pseudo,
+      content: trimmed,
+      roomName: room as string,
+    });
+
+    setContent('');
   };
 
-  const handleLogout = () => {
+  const isLeavingRef = useRef(false);
+
+  const leaveRoom = () => {
+    socketRef.current?.off();
     socketRef.current?.disconnect();
-    localStorage.removeItem('profile');
-    router.replace('/reception');
+    socketRef.current = null;
+    router.push('/profile');
   };
-
-  if (!pseudo) return <p>Chargement...</p>;
 
   return (
-    <main className="container" style={{ maxWidth: 600, margin: '20px auto', fontFamily: 'Arial, sans-serif', position: 'relative' }}>
-      <button
-        onClick={handleLogout}
-        style={{
-          position: 'absolute',
-          top: 20,
-          right: 20,
-          backgroundColor: '#ff4d4f',
-          color: 'white',
-          border: 'none',
-          padding: '8px 16px',
-          borderRadius: 20,
-          cursor: 'pointer',
-          fontWeight: 'bold',
-        }}
+    <main style={{ padding: '1rem', maxWidth: 700, margin: '0 auto', fontFamily: 'Segoe UI, sans-serif' }}>
+      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+        <h2 style={{ color: '#0070f3' }}>Salon : {room}</h2>
+        <button
+          onClick={leaveRoom}
+          style={{ padding: '8px 16px', border: 'none', borderRadius: 8, backgroundColor: '#c62828', color: 'white', cursor: 'pointer' }}
+        >
+          🚪 Quitter
+        </button>
+      </header>
+
+      <section
+        style={{ border: '1px solid #ccc', borderRadius: 8, padding: '1rem', height: '60vh', overflowY: 'auto', backgroundColor: '#f9f9f9', display: 'flex', flexDirection: 'column' }}
       >
-        Déconnexion
-      </button>
-
-      <h1 style={{ textAlign: 'center' }}>Salon : {room}</h1>
-
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
-        {photo && (
-          <img
-            src={photo}
-            alt="Votre photo"
-            style={{ width: 50, height: 50, borderRadius: '50%', objectFit: 'cover', border: '2px solid #0070f3' }}
-          />
-        )}
-        <p style={{ margin: 0, fontWeight: 'bold' }}>Bienvenue, {pseudo} !</p>
-      </div>
-
-      <div
-        ref={chatRef}
-        style={{
-          border: '1px solid #ccc',
-          borderRadius: 8,
-          padding: 16,
-          height: 400,
-          overflowY: 'auto',
-          backgroundColor: '#f9f9f9',
-        }}
-      >
-        {messages.map((msg, index) => {
-          const isMe = msg.pseudo === pseudo;
-          return (
-            <div
-              key={index}
-              style={{
-                display: 'flex',
-                flexDirection: isMe ? 'row-reverse' : 'row',
-                alignItems: 'flex-end',
-                marginBottom: 10,
-              }}
-            >
-              {msg.categorie === 'MESSAGE' && photo && (
-                <img
-                  src={photo}
-                  alt={msg.pseudo}
-                  style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover' }}
-                />
-              )}
-              <div
-                style={{
-                  backgroundColor: msg.categorie === 'INFO'
-                    ? '#ffeeba'
-                    : isMe ? '#0070f3' : '#e5e5ea',
-                  color: msg.categorie === 'INFO'
-                    ? '#856404'
-                    : isMe ? 'white' : 'black',
-                  padding: '10px 14px',
-                  borderRadius: 20,
-                  maxWidth: '70%',
-                }}
-              >
-                <strong>{msg.pseudo}</strong>
-                <div>{msg.content}</div>
-                <small style={{ opacity: 0.6 }}>{msg.dateEmis}</small>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+        {messages.map((m, i) => (
+          <div
+            key={i}
+            style={{
+              alignSelf: m.pseudo === pseudo ? 'flex-end' : 'flex-start',
+              backgroundColor: m.pseudo === pseudo ? '#0070f3' : '#e5e5ea',
+              color: m.pseudo === pseudo ? '#fff' : '#000',
+              borderRadius: 12,
+              padding: '8px 12px',
+              margin: '4px 0',
+              maxWidth: '75%',
+            }}
+          >
+            <strong>{m.pseudo}</strong>
+            <div>{m.content}</div>
+            <small style={{ fontSize: 10, opacity: 0.7 }}>{m.dateEmis}</small>
+          </div>
+        ))}
+        <div ref={messagesEndRef} />
+      </section>
 
       <div style={{ marginTop: 16, display: 'flex', gap: 8 }}>
         <input
-          type="text"
-          value={input}
-          onChange={e => setInput(e.target.value)}
+          value={content}
+          onChange={e => setContent(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && sendMessage()}
-          placeholder="Tapez votre message..."
-          style={{
-            flexGrow: 1,
-            padding: '12px 16px',
-            borderRadius: 24,
-            border: '1px solid #ccc',
-          }}
+          placeholder="Votre message..."
+          style={{ flex: 1, padding: '12px 16px', borderRadius: 8, border: '1px solid #ccc', fontSize: 16 }}
         />
         <button
           onClick={sendMessage}
-          style={{
-            padding: '12px 24px',
-            borderRadius: 24,
-            border: 'none',
-            backgroundColor: '#0070f3',
-            color: 'white',
-            fontWeight: 'bold',
-            cursor: 'pointer',
-          }}
+          style={{ padding: '12px 16px', backgroundColor: '#0070f3', color: 'white', border: 'none', borderRadius: 8, cursor: 'pointer' }}
         >
-          Envoyer
+          📤 Envoyer
         </button>
       </div>
     </main>
