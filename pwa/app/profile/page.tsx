@@ -1,18 +1,39 @@
 'use client';
 
 import { useState, useEffect, useRef } from "react";
+import { io } from "socket.io-client";
 
 export default function Reception() {
   const [pseudo, setPseudo] = useState("");
   const [photo, setPhoto] = useState<string | null>(null);
-  const [rooms, setRooms] = useState<string[]>(["Général", "Développement", "Projet"]);
+  const [rooms, setRooms] = useState<string[]>([]);
   const [photos, setPhotos] = useState<string[]>([]);
-
-  // Caméra
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const socketRef = useRef<any>(null);
+
+  useEffect(() => {
+    const socket = io("https://api.tools.gavago.fr/socketio/");
+    socketRef.current = socket;
+
+    socket.on("connect", () => {
+      console.log("✅ Connecté au serveur Socket.IO :", socket.id);
+      socket.emit("get-rooms"); // demander la liste des salons disponibles
+    });
+
+    // Quand le serveur envoie la liste des rooms
+    socket.on("rooms-list", (data: string[]) => {
+      console.log("📡 Liste des rooms reçue :", data);
+      setRooms(data);
+    });
+
+    // Nettoyage à la fermeture
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
 
   // Charger profil + galerie depuis localStorage
   useEffect(() => {
@@ -56,13 +77,11 @@ export default function Reception() {
   const takePhoto = () => {
     const video = videoRef.current;
     if (!video) return;
-
     const canvas = document.createElement("canvas");
     canvas.width = video.videoWidth || 640;
     canvas.height = video.videoHeight || 480;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
-
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
     const dataUrl = canvas.toDataURL("image/png");
     setPreview(dataUrl);
@@ -71,15 +90,12 @@ export default function Reception() {
   // Sauvegarder photo
   const savePhoto = () => {
     if (!preview) return;
-
     setPhoto(preview);
     localStorage.setItem("photo", preview);
     localStorage.setItem("profile", JSON.stringify({ pseudo, photo: preview }));
-
     const updatedPhotos = [preview, ...photos];
     setPhotos(updatedPhotos);
     localStorage.setItem("photos", JSON.stringify(updatedPhotos));
-
     window.dispatchEvent(new Event("photo-taken"));
     closeCamera();
   };
@@ -118,6 +134,7 @@ export default function Reception() {
             boxShadow: "inset 0 1px 3px rgba(0,0,0,0.1)"
           }}
         />
+
         <button
           onClick={openCamera}
           style={{
@@ -135,12 +152,14 @@ export default function Reception() {
         >
           📸 Prendre une photo
         </button>
+
         {photo && (
           <div style={{ textAlign: "center" }}>
             <h3>Photo de profil</h3>
             <img src={photo} alt="profil" style={{ width: 120, height: 120, borderRadius: "50%", border: "2px solid #0070f3", objectFit: "cover" }} />
           </div>
         )}
+
         <button
           onClick={saveProfile}
           style={{
@@ -160,32 +179,38 @@ export default function Reception() {
         </button>
       </div>
 
+      {/* Liste dynamique des rooms */}
       <section style={{ marginBottom: "2rem" }}>
         <h2 style={{ color: "#0070f3" }}>Rooms disponibles</h2>
-        <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
-          {rooms.map(room => (
-            <a
-              key={room}
-              href={`/room/${room}`}
-              style={{
-                padding: "8px 16px",
-                borderRadius: 8,
-                backgroundColor: "#e5e5ea",
-                textDecoration: "none",
-                color: "#000",
-                fontWeight: "600",
-                boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-                transition: "background-color 0.2s"
-              }}
-              onMouseEnter={e => (e.currentTarget.style.backgroundColor = "#d0d0d5")}
-              onMouseLeave={e => (e.currentTarget.style.backgroundColor = "#e5e5ea")}
-            >
-              ➡️ {room}
-            </a>
-          ))}
-        </div>
+        {rooms.length === 0 ? (
+          <p>Chargement des rooms...</p>
+        ) : (
+          <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
+            {rooms.map(room => (
+              <a
+                key={room}
+                href={`/room/${room}`}
+                style={{
+                  padding: "8px 16px",
+                  borderRadius: 8,
+                  backgroundColor: "#e5e5ea",
+                  textDecoration: "none",
+                  color: "#000",
+                  fontWeight: "600",
+                  boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+                  transition: "background-color 0.2s"
+                }}
+                onMouseEnter={e => (e.currentTarget.style.backgroundColor = "#d0d0d5")}
+                onMouseLeave={e => (e.currentTarget.style.backgroundColor = "#e5e5ea")}
+              >
+                ➡️ {room}
+              </a>
+            ))}
+          </div>
+        )}
       </section>
 
+      {/* Galerie */}
       <section>
         <h2 style={{ color: "#0070f3" }}>🖼️ Galerie</h2>
         {photos.length === 0 ? <p>Aucune photo enregistrée.</p> :
@@ -244,13 +269,7 @@ export default function Reception() {
                 alignItems: "center",
                 justifyContent: "center"
               }}>
-                <video
-                  ref={videoRef}
-                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                  autoPlay
-                  playsInline
-                  muted
-                />
+                <video ref={videoRef} style={{ width: "100%", height: "100%", objectFit: "cover" }} autoPlay playsInline muted />
               </div>
               <div style={{ marginTop: 12, display: "flex", gap: 12 }}>
                 <button onClick={takePhoto} style={{ padding: "8px 16px", borderRadius: 8, border: "none", backgroundColor: "#0070f3", color: "white", cursor: "pointer" }}>📷 Capturer</button>

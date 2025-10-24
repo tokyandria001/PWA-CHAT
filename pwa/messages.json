@@ -96,5 +96,12 @@
     "content": "cc",
     "timestamp": 1759500185807,
     "room": "tech"
+  },
+  {
+    "id": "d9881a50-540a-4a6e-96c8-9b9ef4504bfd",
+    "username": "toto",
+    "content": "sly",
+    "timestamp": 1759502167418,
+    "room": "tech"
   }
 ]
