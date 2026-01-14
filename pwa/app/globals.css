@@ -1,12 +1,11 @@
-/* globals.css */
-
-/* Styles globaux de base */
-.body {
+/* --- MODE SOMBRE GLOBAL --- */
+body {
   margin: 0;
   padding: 0;
-  background-color: #2d60ad;
-  color: #333;
+  background-color: #0e1117;
+  color: #e2e8f0;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  line-height: 1.6;
 }
 
 /* Conteneur principal */
@@ -14,24 +13,26 @@
   max-width: 800px;
   margin: 2rem auto;
   padding: 2rem;
-  background: #f7f9fc;
-  color: #333;
-  border-radius: 10px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  background: #1a1f2b;
+  color: #f1f5f9;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
 }
 
 /* Titres */
 .title {
-  font-size: 2rem;
+  font-size: 2.3rem;
   margin-bottom: 1rem;
-  color: #1a73e8;
+  color: #60a5fa; /* bleu clair */
   text-align: center;
+  font-weight: 600;
 }
 
 .description {
   font-size: 1.1rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem;
   text-align: center;
+  color: #94a3b8;
 }
 
 /* Liste des fonctionnalités */
@@ -42,106 +43,99 @@
 }
 
 .featuresList li {
-  background: #ffffff;
-  border-left: 5px solid #1a73e8;
+  background: #232938;
+  border-left: 5px solid #3b82f6;
   margin-bottom: 1rem;
-  padding: 0.75rem 1rem;
-  border-radius: 6px;
+  padding: 1rem 1.2rem;
+  border-radius: 12px;
   font-size: 1rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-  transition: transform 0.2s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease, background-color 0.2s ease;
 }
 
 .featuresList li:hover {
-  transform: translateX(5px);
-  background-color: #e8f0fe;
+  transform: translateX(6px);
+  background-color: #2d3748;
 }
 
 /* Boutons */
 .button {
-  background-color: #1a73e8;
+  background-color: #2563eb;
   color: white;
   border: none;
   padding: 0.75rem 1.5rem;
-  border-radius: 8px;
+  border-radius: 10px;
   font-size: 1rem;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: all 0.3s ease;
   display: inline-block;
   text-align: center;
   text-decoration: none;
-  /* pour les <a> */
 }
 
 .button:hover {
-  background-color: #1666c1;
-}
-
-/* Centrer les éléments */
-.textCenter {
-  text-align: center;
+  background-color: #1d4ed8;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(37, 99, 235, 0.4);
 }
 
 /* Formulaire */
-
 .formGroup {
   margin-bottom: 1.5rem;
 }
 
 .label {
   display: block;
-  font-weight: bold;
+  font-weight: 600;
   margin-bottom: 0.5rem;
+  color: #e2e8f0;
 }
 
 .input,
 select {
   width: 100%;
-  padding: 0.6rem 1rem;
-  border: 1px solid #ccc;
-  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  background-color: #0f172a;
+  border: 1px solid #334155;
+  color: #f1f5f9;
+  border-radius: 10px;
   font-size: 1rem;
-  transition: border-color 0.2s ease;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .input:focus,
 select:focus {
-  border-color: #1a73e8;
+  border-color: #3b82f6;
   outline: none;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
 }
 
 /* Caméra */
-
 .videoContainer {
   display: flex;
   justify-content: center;
   align-items: center;
   position: relative;
-  background-color: #000;
-  border-radius: 10px;
+  background-color: #0f172a;
+  border-radius: 12px;
   overflow: hidden;
   height: auto;
   margin-bottom: 1rem;
-  max-height: 300px;
+  max-height: 350px;
 }
 
 .video {
   width: 100%;
-  max-width: 100%;
   height: auto;
-  border-radius: 10px;
+  border-radius: 12px;
 }
 
-.videoHidden {
-  display: none;
-}
-
+.videoHidden,
 .canvas {
   display: none;
 }
 
-/* Boutons */
-
+/* Groupe de boutons caméra */
 .buttonGroup {
   display: flex;
   justify-content: center;
@@ -150,25 +144,7 @@ select:focus {
   flex-wrap: wrap;
 }
 
-.button {
-  background-color: #1a73e8;
-  color: white;
-  border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-  text-decoration: none;
-  text-align: center;
-}
-
-.button:hover {
-  background-color: #1666c1;
-}
-
 /* Aperçu photo */
-
 .photoPreview {
   text-align: center;
   margin-top: 1rem;
@@ -177,7 +153,106 @@ select:focus {
 .image {
   max-width: 100%;
   height: auto;
+  border-radius: 12px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
+  border: 2px solid #334155;
+}
+
+/* Galerie */
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 12px;
+  margin-top: 1rem;
+}
+
+.gallery img {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: 2px solid #1e293b;
+}
+
+.gallery img:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.5);
+}
+
+/* Centrage général */
+.textCenter {
+  text-align: center;
+}
+
+/* Zone de messages */
+.messagesContainer {
+  height: 60vh;
+  overflow-y: auto;
+  border: 1px solid #334155;
   border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  border: 2px solid #e0e0e0;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  background-color: #0f172a;
+}
+
+/* Messages */
+.message {
+  display: flex;
+  align-items: flex-start;
+  max-width: 75%;
+}
+
+.message.mine {
+  flex-direction: row;
+}
+
+.message.other {
+  flex-direction: row-reverse;
+  margin-left: auto;
+}
+
+.messagePhoto {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 0.5rem;
+  border: 2px solid #3b82f6;
+}
+
+.message.other .messagePhoto {
+  margin-left: 0.5rem;
+  margin-right: 0;
+  border-color: #64748b;
+}
+
+.messageContent {
+  background-color: #2563eb;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 12px;
+  word-break: break-word;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4);
+}
+
+.message.other .messageContent {
+  background-color: #1e293b;
+  color: #f1f5f9;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Scrollbar personnalisée */
+.messagesContainer::-webkit-scrollbar {
+  width: 8px;
+}
+.messagesContainer::-webkit-scrollbar-thumb {
+  background-color: #3b82f6;
+  border-radius: 4px;
+}
+.messagesContainer::-webkit-scrollbar-track {
+  background-color: #1e293b;
 }

@@ -11,6 +11,8 @@ type Message = {
   dateEmis?: string;
 };
 
+const getRoomStorageKey = (room: string) => `room-messages-${room}`;
+
 export default function RoomPage() {
   const { room } = useParams();
   const router = useRouter();
@@ -20,14 +22,15 @@ export default function RoomPage() {
   const [content, setContent] = useState('');
   const socketRef = useRef<Socket | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const isLeavingRef = useRef(false);
 
-  // Scroll automatique
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Connexion socket
   useEffect(() => {
+    if (!room) return;
+
     const storedProfile = localStorage.getItem('profile');
     if (!storedProfile) {
       alert('Profil manquant, retour à la réception');
@@ -38,6 +41,16 @@ export default function RoomPage() {
     setPseudo(parsed.pseudo || 'Anonyme');
     setPhoto(parsed.photo || null);
 
+    const storedMessages = localStorage.getItem(getRoomStorageKey(room as string));
+    if (storedMessages) {
+      setMessages(JSON.parse(storedMessages));
+    }
+
+  }, [room, router]);
+
+  useEffect(() => {
+    if (!room) return;
+
     const socket = io('https://api.tools.gavago.fr', {
       transports: ['websocket'],
       reconnection: false,
@@ -46,7 +59,7 @@ export default function RoomPage() {
 
     socket.on('connect', () => {
       console.log('✅ Connecté au serveur Socket.IO :', socket.id);
-      socket.emit('chat-join-room', { pseudo: parsed.pseudo, roomName: room });
+      socket.emit('chat-join-room', { pseudo, roomName: room });
     });
 
     socket.on('connect_error', (err) => {
@@ -55,32 +68,47 @@ export default function RoomPage() {
 
     socket.on('chat-msg', (msg: Message) => {
       msg.dateEmis = new Date().toLocaleTimeString();
-      setMessages(prev => [...prev, msg]);
+      setMessages(prev => {
+        const updated = [...prev, msg];
+        localStorage.setItem(
+          getRoomStorageKey(room as string),
+          JSON.stringify(updated)
+        );
+        return updated;
+      });
     });
 
     return () => {
-      isLeavingRef.current = true; // Indique que c’est volontaire
+      isLeavingRef.current = true;
       socket.disconnect();
       socketRef.current = null;
     };
-  }, [room, router]);
+  }, [room, pseudo]);
 
   const sendMessage = () => {
     const trimmed = content.trim();
     if (!trimmed || !socketRef.current) return;
-
-    socketRef.current.emit('chat-msg', {
+    const msg: Message = {
       pseudo,
       content: trimmed,
       roomName: room as string,
-    });
+      dateEmis: new Date().toLocaleTimeString(),
+    };
 
+    socketRef.current.emit('chat-msg', msg);
+    setMessages(prev => {
+      const updated = [...prev, msg];
+      localStorage.setItem(
+        getRoomStorageKey(room as string),
+        JSON.stringify(updated)
+      );
+      return updated;
+    });
     setContent('');
   };
 
-  const isLeavingRef = useRef(false);
-
   const leaveRoom = () => {
+    isLeavingRef.current = true;
     socketRef.current?.off();
     socketRef.current?.disconnect();
     socketRef.current = null;
@@ -88,55 +116,43 @@ export default function RoomPage() {
   };
 
   return (
-    <main style={{ padding: '1rem', maxWidth: 700, margin: '0 auto', fontFamily: 'Segoe UI, sans-serif' }}>
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-        <h2 style={{ color: '#0070f3' }}>Salon : {room}</h2>
-        <button
-          onClick={leaveRoom}
-          style={{ padding: '8px 16px', border: 'none', borderRadius: 8, backgroundColor: '#c62828', color: 'white', cursor: 'pointer' }}
-        >
-          🚪 Quitter
-        </button>
+    <main className="container">
+      <header className="flex justify-between items-center mb-4">
+        <h2 className="title">Salon : {room}</h2>
+        <button onClick={leaveRoom} className="button bg-red-600 hover:bg-red-700">🚪 Quitter</button>
       </header>
 
-      <section
-        style={{ border: '1px solid #ccc', borderRadius: 8, padding: '1rem', height: '60vh', overflowY: 'auto', backgroundColor: '#f9f9f9', display: 'flex', flexDirection: 'column' }}
-      >
-        {messages.map((m, i) => (
-          <div
-            key={i}
-            style={{
-              alignSelf: m.pseudo === pseudo ? 'flex-end' : 'flex-start',
-              backgroundColor: m.pseudo === pseudo ? '#0070f3' : '#e5e5ea',
-              color: m.pseudo === pseudo ? '#fff' : '#000',
-              borderRadius: 12,
-              padding: '8px 12px',
-              margin: '4px 0',
-              maxWidth: '75%',
-            }}
-          >
-            <strong>{m.pseudo}</strong>
-            <div>{m.content}</div>
-            <small style={{ fontSize: 10, opacity: 0.7 }}>{m.dateEmis}</small>
-          </div>
-        ))}
+      <section className="messagesContainer">
+        {messages.map((m, i) => {
+          const isMine = m.pseudo === pseudo;
+          return (
+            <div
+              key={i}
+              className={`message ${isMine ? 'mine' : 'other'}`}
+            >
+              {isMine && photo && (
+                <img src={photo} alt="profil" className="messagePhoto" />
+              )}
+              <div className="messageContent">
+                <strong>{m.pseudo}</strong>
+                <div>{m.content}</div>
+                <small>{m.dateEmis}</small>
+              </div>
+            </div>
+          );
+        })}
         <div ref={messagesEndRef} />
       </section>
 
-      <div style={{ marginTop: 16, display: 'flex', gap: 8 }}>
+      <div className="formGroup flex gap-2 mt-3">
         <input
           value={content}
           onChange={e => setContent(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && sendMessage()}
           placeholder="Votre message..."
-          style={{ flex: 1, padding: '12px 16px', borderRadius: 8, border: '1px solid #ccc', fontSize: 16 }}
+          className="input flex-grow"
         />
-        <button
-          onClick={sendMessage}
-          style={{ padding: '12px 16px', backgroundColor: '#0070f3', color: 'white', border: 'none', borderRadius: 8, cursor: 'pointer' }}
-        >
-          📤 Envoyer
-        </button>
+        <button onClick={sendMessage} className="button bg-blue-600 hover:bg-blue-700">📤 Envoyer</button>
       </div>
     </main>
   );

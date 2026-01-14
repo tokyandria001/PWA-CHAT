@@ -16,7 +16,7 @@ export default function Home() {
 
   return (
     <main className="container">
-      <h1 className="title">Bienvenue sur ChatCam</h1>
+      <h1 className="title">Bienvenue sur PWA-CHAT</h1>
       <p className="description">
         Une Progressive Web App pour discuter, prendre des photos, et partager !
       </p>

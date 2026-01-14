@@ -33,7 +33,7 @@ export default function RootLayout({
         <header className={styles.header}>
           <nav className={styles.nav}>
             <Link href="/" className={styles.navLink}>🏠 Accueil</Link>
-            <Link href="/profile" className={styles.navLink}>🧑 Connexion</Link>
+            <Link href="/profile" className={styles.navLink}>Réception</Link>
           </nav>
         </header>
         <NotificationManager/>
