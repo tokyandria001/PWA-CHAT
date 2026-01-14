@@ -92,18 +92,9 @@ export default function RoomPage() {
       pseudo,
       content: trimmed,
       roomName: room as string,
-      dateEmis: new Date().toLocaleTimeString(),
     };
 
     socketRef.current.emit('chat-msg', msg);
-    setMessages(prev => {
-      const updated = [...prev, msg];
-      localStorage.setItem(
-        getRoomStorageKey(room as string),
-        JSON.stringify(updated)
-      );
-      return updated;
-    });
     setContent('');
   };
 

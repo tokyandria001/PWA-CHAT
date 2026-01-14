@@ -49,6 +49,17 @@ export default function Reception() {
   }, []);
 
   useEffect(() => {
+    if (!('Notification' in window)) return;
+
+    if (Notification.permission === 'default') {
+      Notification.requestPermission().then(permission => {
+        console.log('Permission notification:', permission);
+      });
+    }
+  }, []);
+
+
+  useEffect(() => {
     const storedProfile = localStorage.getItem('profile');
     if (storedProfile) {
       const parsed = JSON.parse(storedProfile);
@@ -72,7 +83,7 @@ export default function Reception() {
 
         const parsed = Object.keys(json.data || {}).map(raw => {
           let decoded = raw;
-          try { decoded = decodeURIComponent(raw); } catch {}
+          try { decoded = decodeURIComponent(raw); } catch { }
           const clientsCount = Object.keys(json.data[raw].clients || {}).length;
           return { rawName: raw, name: decoded, clientsCount };
         });
@@ -130,6 +141,14 @@ export default function Reception() {
     setPhotos(updated);
     localStorage.setItem('profile', JSON.stringify({ pseudo, photo: preview }));
     localStorage.setItem('photos', JSON.stringify(updated));
+
+    if ('Notification' in window && Notification.permission === 'granted') {
+      new Notification('📸 Photo enregistrée', {
+        body: 'La photo a été ajoutée à votre galerie',
+        icon: preview,
+      });
+    }
+
     setPreview(null);
     closeCamera();
   };
