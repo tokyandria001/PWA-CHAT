@@ -173,13 +173,6 @@ export default function Reception() {
     setPreview(null);
   };
 
-  const clearGallery = () => {
-    if (confirm('Supprimer toutes les photos ?')) {
-      localStorage.removeItem('photos');
-      setPhotos([]);
-    }
-  };
-
   const connectToRoom = () => {
     if (!pseudo.trim()) return alert('Merci d’indiquer un pseudo.');
     if (!selectedRoom) return alert('Veuillez choisir une room.');
@@ -202,10 +195,6 @@ export default function Reception() {
     reader.readAsDataURL(file);
   };
 
-  const selectPhotoAsProfile = (img: string) => {
-    setPhoto(img);
-    localStorage.setItem('profile', JSON.stringify({ pseudo, photo: img }));
-  };
 
   return (
     <main className={styles.container}>
