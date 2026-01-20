@@ -34,6 +34,7 @@ export default function RootLayout({
           <nav className={styles.nav}>
             <Link href="/" className={styles.navLink}>🏠 Accueil</Link>
             <Link href="/profile" className={styles.navLink}>Réception</Link>
+            <Link href="/createroom" className={styles.navLink}>Créez un salon</Link>
           </nav>
         </header>
         <NotificationManager/>

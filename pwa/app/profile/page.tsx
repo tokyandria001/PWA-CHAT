@@ -1,5 +1,6 @@
 'use client';
 
+import styles from './page.module.css';
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { io } from 'socket.io-client';
@@ -194,119 +195,100 @@ export default function Reception() {
   };
 
   return (
-    <main className="container">
-      <h1 className="title">Connexion</h1>
+    <main className={styles.container}>
+      <h1 className={styles.title}>Connexion</h1>
 
       {/* Profil */}
-      <div className="formGroup">
+      <section className={styles.section}>
+        <h2 className={styles.sectionTitle}>Profil</h2>
+
         <input
           value={pseudo}
           onChange={e => setPseudo(e.target.value)}
           placeholder="Votre pseudo"
-          className="input"
+          className={styles.input}
         />
-      </div>
 
-      <div className="buttonGroup">
-        <button onClick={openCamera} className="button">📸 Prendre une photo</button>
-        <input type="file" accept="image/*" onChange={importImage} className="input" />
-        {photo && (
-          <img
-            src={photo}
-            alt="profil"
-            className="image"
-            style={{
-              width: 120,
-              height: 120,
-              borderRadius: '50%',
-              border: '3px solid #1a73e8',
-              objectFit: 'cover',
-            }}
-          />
-        )}
-      </div>
+        <input
+          type="file"
+          accept="image/*"
+          onChange={importImage}
+          className={styles.input}
+        />
 
-      <div className="buttonGroup">
-        <button onClick={saveProfile} className="button">💾 Sauvegarder profil</button>
-      </div>
+        {photo && <img src={photo} className={styles.avatar} />}
+
+        <button onClick={saveProfile} className={styles.button}>
+          💾 Sauvegarder
+        </button>
+      </section>
 
       {/* Rooms */}
-      <section className="formGroup">
-        <h2 className="description">Rooms disponibles</h2>
-        {rooms.length === 0 ? (
-          <p>Chargement des rooms...</p>
-        ) : (
-          <div className="buttonGroup">
-            <select
-              value={selectedRoom}
-              onChange={e => setSelectedRoom(e.target.value)}
-              className="input"
-            >
-              <option value="">-- Choisissez une room --</option>
-              {rooms.map(r => (
-                <option key={r.rawName} value={r.name}>
-                  {r.name} ({r.clientsCount})
-                </option>
-              ))}
-            </select>
-            <button onClick={connectToRoom} className="button">🚀 Entrer</button>
-          </div>
-        )}
+      <section className={styles.section}>
+        <h2 className={styles.sectionTitle}>Salons</h2>
+
+        <select
+          value={selectedRoom}
+          onChange={e => setSelectedRoom(e.target.value)}
+          className={styles.input}
+        >
+          <option value="">-- Choisir une room --</option>
+          {rooms.map(r => (
+            <option key={r.rawName} value={r.name}>
+              {r.name} ({r.clientsCount})
+            </option>
+          ))}
+        </select>
+
+        <button onClick={connectToRoom} className={styles.button}>
+          🚀 Entrer
+        </button>
       </section>
 
       {/* Galerie */}
-      <section>
-        <h2 className="description">🖼️ Galerie</h2>
-        {photos.length === 0 ? (
-          <p>Aucune photo enregistrée.</p>
-        ) : (
-          <div className="gallery">
-            {photos.map((p, i) => (
-              <img
-                key={i}
-                src={p}
-                alt={`photo-${i}`}
-                onClick={() => selectPhotoAsProfile(p)}
-                style={{
-                  cursor: 'pointer',
-                  width: 80,
-                  height: 80,
-                  borderRadius: '50%',
-                  border: p === photo ? '3px solid #1a73e8' : '2px solid #ccc',
-                  objectFit: 'cover',
-                  margin: 5,
-                }}
-              />
-            ))}
-          </div>
-        )}
-        {photos.length > 0 && (
-          <div className="buttonGroup">
-            <button onClick={clearGallery} className="button">🗑️ Vider la galerie</button>
-          </div>
-        )}
+      <section className={styles.section}>
+        <h2 className={styles.sectionTitle}>Galerie</h2>
+
+        <button onClick={openCamera} className={styles.button}>
+          📸 Prendre une photo
+        </button>
+
+        <div className={styles.gallery}>
+          {photos.map((p, i) => (
+            <img
+              key={i}
+              src={p}
+              onClick={() => setPhoto(p)}
+              className={`${styles.galleryImg} ${p === photo ? styles.galleryImgActive : ''
+                }`}
+            />
+          ))}
+        </div>
       </section>
 
       {/* Caméra */}
       {isCameraOpen && (
-        <div className="videoContainer">
-          {!preview ? (
-            <>
-              <video ref={videoRef} className="video" autoPlay playsInline muted />
-              <div className="buttonGroup">
-                <button onClick={takePhoto} className="button">📷 Capturer</button>
-                <button onClick={closeCamera} className="button">❌ Annuler</button>
-              </div>
-            </>
-          ) : (
-            <>
-              <img src={preview} alt="Aperçu" className="image" />
-              <div className="buttonGroup">
-                <button onClick={savePhoto} className="button">✅ Utiliser</button>
-                <button onClick={() => setPreview(null)} className="button">🔄 Reprendre</button>
-              </div>
-            </>
-          )}
+        <div className={styles.overlay}>
+          <div className={styles.cameraBox}>
+            {!preview ? (
+              <>
+                <video ref={videoRef} className={styles.video} muted />
+                <button onClick={takePhoto} className={styles.button}>
+                  📷 Capturer
+                </button>
+                <button onClick={closeCamera} className={styles.button}>
+                  ❌ Annuler
+                </button>
+              </>
+            ) : (
+              <>
+                <img src={preview} className={styles.video} />
+                <button onClick={savePhoto} className={styles.button}>
+                  ✅ Utiliser
+                </button>
+              </>
+            )}
+          </div>
         </div>
       )}
     </main>
