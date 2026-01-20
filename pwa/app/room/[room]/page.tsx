@@ -187,7 +187,7 @@ export default function RoomPage() {
               const isMine = m.pseudo === pseudo;
               return (
                 <div key={i} className={`${styles.message} ${isMine ? styles.mine : styles.other}`}>
-                  {isMine && photo && <img src={photo} alt="profil" className={styles.messagePhoto} />}
+                  {isMine && photo && <Image src={photo} alt="profil" className={styles.messagePhoto} />}
                   <div className={styles.messageContent}>
                     <strong>{m.pseudo}</strong>
                     {m.content && <div>{m.content}</div>}
