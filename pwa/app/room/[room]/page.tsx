@@ -6,7 +6,6 @@ import { useParams, useRouter } from 'next/navigation';
 import { io, Socket } from 'socket.io-client';
 import { DefaultEventsMap } from 'socket.io';
 
-// Typage des messages
 type Message = {
   pseudo: string;
   content?: string;
@@ -19,7 +18,6 @@ type Message = {
 const getRoomStorageKey = (room: string) => `room-messages-${room}`;
 
 export default function RoomPage() {
-  const { room } = useParams();
   const router = useRouter();
 
   const [pseudo, setPseudo] = useState('');
@@ -31,6 +29,8 @@ export default function RoomPage() {
   const socketRef = useRef<Socket<DefaultEventsMap, DefaultEventsMap> | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const isLeavingRef = useRef(false);
+
+  const { room } = useParams();
 
   const roomParam = Array.isArray(room) ? room[0] : room;
 
