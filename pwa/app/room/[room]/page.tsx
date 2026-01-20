@@ -6,6 +6,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { io, Socket } from 'socket.io-client';
 import { DefaultEventsMap } from 'socket.io';
 
+// Typage des messages
 type Message = {
   pseudo: string;
   content?: string;
@@ -20,6 +21,7 @@ const getRoomStorageKey = (room: string) => `room-messages-${room}`;
 export default function RoomPage() {
   const router = useRouter();
 
+  // -------------------- Hooks en tout début --------------------
   const [pseudo, setPseudo] = useState('');
   const [photo, setPhoto] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -31,18 +33,17 @@ export default function RoomPage() {
   const isLeavingRef = useRef(false);
 
   const { room } = useParams();
-
   const roomParam = Array.isArray(room) ? room[0] : room;
 
-  if (!roomParam) return <div>Room non spécifiée</div>;
-
-  // Scroll automatique
+  // -------------------- Scroll automatique --------------------
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Chargement du profil et messages
+  // -------------------- Chargement du profil et des messages --------------------
   useEffect(() => {
+    if (!roomParam) return;
+
     const storedProfile = localStorage.getItem('profile');
     if (!storedProfile) {
       alert('Profil manquant, retour à la réception');
@@ -58,8 +59,10 @@ export default function RoomPage() {
     if (storedMessages) setMessages(JSON.parse(storedMessages) as Message[]);
   }, [roomParam, router]);
 
-  // Connexion Socket.IO
+  // -------------------- Connexion Socket.IO --------------------
   useEffect(() => {
+    if (!roomParam) return;
+
     const socket: Socket<DefaultEventsMap, DefaultEventsMap> = io('https://api.tools.gavago.fr', {
       transports: ['websocket'],
       reconnection: false,
@@ -97,7 +100,7 @@ export default function RoomPage() {
     };
   }, [roomParam, pseudo]);
 
-  // Convertir fichier en base64
+  // -------------------- Fonctions utilitaires --------------------
   const fileToBase64 = (file: File): Promise<string> =>
     new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -106,7 +109,6 @@ export default function RoomPage() {
       reader.readAsDataURL(file);
     });
 
-  // Upload image
   const uploadImage = async (file: File): Promise<string | null> => {
     if (!socketRef.current) return null;
     const imageBase64 = await fileToBase64(file);
@@ -124,7 +126,6 @@ export default function RoomPage() {
     }
   };
 
-  // Récupérer image par ID
   const fetchImageById = async (id: string): Promise<string | null> => {
     try {
       const res = await fetch(`https://api.tools.gavago.fr/socketio/api/images/${id}`);
@@ -135,7 +136,6 @@ export default function RoomPage() {
     }
   };
 
-  // Envoyer un message
   const sendMessage = async () => {
     if (!socketRef.current) return;
 
@@ -152,14 +152,13 @@ export default function RoomPage() {
       pseudo,
       content: content.trim() || undefined,
       imageId,
-      roomName: roomParam,
+      roomName: roomParam!,
     });
 
     setContent('');
     setImageFile(null);
   };
 
-  // Quitter la room
   const leaveRoom = () => {
     isLeavingRef.current = true;
     socketRef.current?.disconnect();
@@ -167,51 +166,59 @@ export default function RoomPage() {
     router.push('/profile');
   };
 
+  // -------------------- JSX --------------------
   return (
     <main className={styles.container}>
-      <header className={styles.header}>
-        <h2 className={styles.title}>Salon : {roomParam}</h2>
-        <button onClick={leaveRoom} className={`${styles.button} ${styles.buttonDanger}`}>
-          🚪 Quitter
-        </button>
-      </header>
+      {/* Affichage conditionnel si roomParam absent */}
+      {!roomParam ? (
+        <div>Room non spécifiée</div>
+      ) : (
+        <>
+          <header className={styles.header}>
+            <h2 className={styles.title}>Salon : {roomParam}</h2>
+            <button onClick={leaveRoom} className={`${styles.button} ${styles.buttonDanger}`}>
+              🚪 Quitter
+            </button>
+          </header>
 
-      <section className={styles.messagesContainer}>
-        {messages.map((m, i) => {
-          const isMine = m.pseudo === pseudo;
-          return (
-            <div key={i} className={`${styles.message} ${isMine ? styles.mine : styles.other}`}>
-              {isMine && photo && <img src={photo} alt="profil" className={styles.messagePhoto} />}
-              <div className={styles.messageContent}>
-                <strong>{m.pseudo}</strong>
-                {m.content && <div>{m.content}</div>}
-                {m.image && <img src={m.image} alt="image envoyée" className={styles.messageImage} />}
-                <small className={styles.messageDate}>{m.dateEmis}</small>
-              </div>
-            </div>
-          );
-        })}
-        <div ref={messagesEndRef} />
-      </section>
+          <section className={styles.messagesContainer}>
+            {messages.map((m, i) => {
+              const isMine = m.pseudo === pseudo;
+              return (
+                <div key={i} className={`${styles.message} ${isMine ? styles.mine : styles.other}`}>
+                  {isMine && photo && <img src={photo} alt="profil" className={styles.messagePhoto} />}
+                  <div className={styles.messageContent}>
+                    <strong>{m.pseudo}</strong>
+                    {m.content && <div>{m.content}</div>}
+                    {m.image && <img src={m.image} alt="image envoyée" className={styles.messageImage} />}
+                    <small className={styles.messageDate}>{m.dateEmis}</small>
+                  </div>
+                </div>
+              );
+            })}
+            <div ref={messagesEndRef} />
+          </section>
 
-      <div className={styles.formGroup}>
-        <input
-          value={content}
-          onChange={e => setContent(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && sendMessage()}
-          placeholder="Votre message..."
-          className={styles.input}
-        />
-        <input
-          type="file"
-          accept="image/*"
-          onChange={e => e.target.files && setImageFile(e.target.files[0])}
-          className={styles.fileInput}
-        />
-        <button onClick={sendMessage} className={`${styles.button} ${styles.buttonPrimary}`}>
-          📤 Envoyer
-        </button>
-      </div>
+          <div className={styles.formGroup}>
+            <input
+              value={content}
+              onChange={e => setContent(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && sendMessage()}
+              placeholder="Votre message..."
+              className={styles.input}
+            />
+            <input
+              type="file"
+              accept="image/*"
+              onChange={e => e.target.files && setImageFile(e.target.files[0])}
+              className={styles.fileInput}
+            />
+            <button onClick={sendMessage} className={`${styles.button} ${styles.buttonPrimary}`}>
+              📤 Envoyer
+            </button>
+          </div>
+        </>
+      )}
     </main>
   );
 }
