@@ -32,9 +32,9 @@ export default function RoomPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const isLeavingRef = useRef(false);
 
-  // ⚠ Assurer que room est bien une string
   const roomParam = Array.isArray(room) ? room[0] : room;
-  if (!roomParam) return <div>Room non spécifiée</div>; // Sécurité si undefined
+
+  if (!roomParam) return <div>Room non spécifiée</div>;
 
   // Scroll automatique
   useEffect(() => {
