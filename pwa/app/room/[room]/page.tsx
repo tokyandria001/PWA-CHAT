@@ -6,11 +6,12 @@ import { useParams, useRouter } from 'next/navigation';
 import { io, Socket } from 'socket.io-client';
 import { DefaultEventsMap } from 'socket.io';
 
+// Typage des messages
 type Message = {
   pseudo: string;
   content?: string;
   imageId?: string;
-  image?: string | null; // image chargée via API pour affichage
+  image?: string | null;
   roomName: string;
   dateEmis?: string;
 };
@@ -20,6 +21,10 @@ const getRoomStorageKey = (room: string) => `room-messages-${room}`;
 export default function RoomPage() {
   const { room } = useParams();
   const router = useRouter();
+
+  // ⚠ Assurer que room est bien une string
+  const roomParam = Array.isArray(room) ? room[0] : room;
+  if (!roomParam) return <div>Room non spécifiée</div>; // Sécurité si undefined
 
   const [pseudo, setPseudo] = useState('');
   const [photo, setPhoto] = useState<string | null>(null);
@@ -31,13 +36,13 @@ export default function RoomPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const isLeavingRef = useRef(false);
 
+  // Scroll automatique
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  // Chargement du profil et messages
   useEffect(() => {
-    if (!room) return;
-
     const storedProfile = localStorage.getItem('profile');
     if (!storedProfile) {
       alert('Profil manquant, retour à la réception');
@@ -45,19 +50,17 @@ export default function RoomPage() {
       return;
     }
 
-    const parsed = JSON.parse(storedProfile);
-    setPseudo(parsed.pseudo ?? 'Anonyme'); // string par défaut
-    setPhoto(parsed.photo ?? null);        // string | null
+    const parsed: { pseudo?: string; photo?: string | null } = JSON.parse(storedProfile);
+    setPseudo(parsed.pseudo ?? 'Anonyme');
+    setPhoto(parsed.photo ?? null);
 
-    const storedMessages = localStorage.getItem(getRoomStorageKey(room as string));
-    if (storedMessages) setMessages(JSON.parse(storedMessages));
-  }, [room, router]);
+    const storedMessages = localStorage.getItem(getRoomStorageKey(roomParam));
+    if (storedMessages) setMessages(JSON.parse(storedMessages) as Message[]);
+  }, [roomParam, router]);
 
-  /* ================= SOCKET.IO ================= */
+  // Connexion Socket.IO
   useEffect(() => {
-    if (!room) return;
-
-    const socket = io('https://api.tools.gavago.fr', {
+    const socket: Socket<DefaultEventsMap, DefaultEventsMap> = io('https://api.tools.gavago.fr', {
       transports: ['websocket'],
       reconnection: false,
     });
@@ -65,14 +68,12 @@ export default function RoomPage() {
     socketRef.current = socket;
 
     socket.on('connect', () => {
-      if (socketRef.current)
-        socketRef.current.emit('chat-join-room', { pseudo, roomName: room });
+      socketRef.current?.emit('chat-join-room', { pseudo, roomName: roomParam });
     });
 
     socket.on('chat-msg', async (msg: Message) => {
       msg.dateEmis = new Date().toLocaleTimeString();
 
-      // récupérer l'image depuis l'API si imageId
       if (msg.imageId) {
         const image = await fetchImageById(msg.imageId);
         if (image) msg.image = image;
@@ -80,13 +81,13 @@ export default function RoomPage() {
 
       setMessages(prev => {
         const updated = [...prev, msg].slice(-50);
-        localStorage.setItem(getRoomStorageKey(room as string), JSON.stringify(updated));
+        localStorage.setItem(getRoomStorageKey(roomParam), JSON.stringify(updated));
         return updated;
       });
     });
 
     socket.on('connect_error', err => {
-      if (!isLeavingRef.current) console.error('Connect error:', err.message);
+      if (!isLeavingRef.current) console.error('Connect error:', (err as Error).message);
     });
 
     return () => {
@@ -94,9 +95,9 @@ export default function RoomPage() {
       socket.disconnect();
       socketRef.current = null;
     };
-  }, [room, pseudo]);
+  }, [roomParam, pseudo]);
 
-  /* ================= HELPERS IMAGE ================= */
+  // Convertir fichier en base64
   const fileToBase64 = (file: File): Promise<string> =>
     new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -105,48 +106,40 @@ export default function RoomPage() {
       reader.readAsDataURL(file);
     });
 
+  // Upload image
   const uploadImage = async (file: File): Promise<string | null> => {
     if (!socketRef.current) return null;
-
     const imageBase64 = await fileToBase64(file);
 
     try {
-      const res = await fetch(
-        'https://api.tools.gavago.fr/socketio/api/images',
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            id: socketRef.current.id,
-            image_data: imageBase64,
-          }),
-        }
-      );
-      const json = await res.json();
-      return json.success ? socketRef.current?.id ?? null : null;
+      const res = await fetch('https://api.tools.gavago.fr/socketio/api/images', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: socketRef.current.id, image_data: imageBase64 }),
+      });
+      const json: { success: boolean; [key: string]: unknown } = await res.json();
+      return json.success ? socketRef.current.id ?? null : null;
     } catch {
       return null;
     }
   };
 
+  // Récupérer image par ID
   const fetchImageById = async (id: string): Promise<string | null> => {
     try {
-      const res = await fetch(
-        `https://api.tools.gavago.fr/socketio/api/images/${id}`
-      );
-      const json = await res.json();
-      return json.success ? json.data_image : null;
+      const res = await fetch(`https://api.tools.gavago.fr/socketio/api/images/${id}`);
+      const json: { success: boolean; data_image?: string } = await res.json();
+      return json.success ? json.data_image ?? null : null;
     } catch {
       return null;
     }
   };
 
-  /* ================= ENVOI MESSAGE ================= */
+  // Envoyer un message
   const sendMessage = async () => {
     if (!socketRef.current) return;
 
     let imageId: string | undefined;
-
     if (imageFile) {
       const uploadedId = await uploadImage(imageFile);
       if (!uploadedId) return alert("Erreur d'envoi de l'image");
@@ -159,29 +152,26 @@ export default function RoomPage() {
       pseudo,
       content: content.trim() || undefined,
       imageId,
-      roomName: room,
+      roomName: roomParam,
     });
 
     setContent('');
     setImageFile(null);
   };
 
-  /* ================= QUITTER LA ROOM ================= */
+  // Quitter la room
   const leaveRoom = () => {
     isLeavingRef.current = true;
     socketRef.current?.disconnect();
     socketRef.current = null;
     router.push('/profile');
   };
-  /* ================= RENDER ================= */
+
   return (
     <main className={styles.container}>
       <header className={styles.header}>
-        <h2 className={styles.title}>Salon : {room}</h2>
-        <button
-          onClick={leaveRoom}
-          className={`${styles.button} ${styles.buttonDanger}`}
-        >
+        <h2 className={styles.title}>Salon : {roomParam}</h2>
+        <button onClick={leaveRoom} className={`${styles.button} ${styles.buttonDanger}`}>
           🚪 Quitter
         </button>
       </header>
@@ -189,29 +179,13 @@ export default function RoomPage() {
       <section className={styles.messagesContainer}>
         {messages.map((m, i) => {
           const isMine = m.pseudo === pseudo;
-
           return (
-            <div
-              key={i}
-              className={`${styles.message} ${isMine ? styles.mine : styles.other}`}
-            >
-              {isMine && photo && (
-                <img src={photo} alt="profil" className={styles.messagePhoto} />
-              )}
-
+            <div key={i} className={`${styles.message} ${isMine ? styles.mine : styles.other}`}>
+              {isMine && photo && <img src={photo} alt="profil" className={styles.messagePhoto} />}
               <div className={styles.messageContent}>
                 <strong>{m.pseudo}</strong>
-
                 {m.content && <div>{m.content}</div>}
-
-                {m.image && (
-                  <img
-                    src={m.image}
-                    alt="image envoyée"
-                    className={styles.messageImage}
-                  />
-                )}
-
+                {m.image && <img src={m.image} alt="image envoyée" className={styles.messageImage} />}
                 <small className={styles.messageDate}>{m.dateEmis}</small>
               </div>
             </div>
@@ -228,18 +202,13 @@ export default function RoomPage() {
           placeholder="Votre message..."
           className={styles.input}
         />
-
         <input
           type="file"
           accept="image/*"
           onChange={e => e.target.files && setImageFile(e.target.files[0])}
           className={styles.fileInput}
         />
-
-        <button
-          onClick={sendMessage}
-          className={`${styles.button} ${styles.buttonPrimary}`}
-        >
+        <button onClick={sendMessage} className={`${styles.button} ${styles.buttonPrimary}`}>
           📤 Envoyer
         </button>
       </div>

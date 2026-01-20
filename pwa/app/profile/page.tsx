@@ -3,7 +3,9 @@
 import styles from './page.module.css';
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { io } from 'socket.io-client';
+import { io, Socket } from 'socket.io-client';
+
+type ClientData = Record<string, unknown>;
 
 type Room = {
   rawName: string;
@@ -11,14 +13,19 @@ type Room = {
   clientsCount: number;
 };
 
+type RoomData = {
+  clients: ClientData;
+}
+
 type RoomsApiResponse = {
   success: boolean;
-  metadata?: any;
-  data: Record<string, { clients: Record<string, any> }>;
+  metadata?: unknown;
+  data: Record<string, RoomData>;
 };
 
 export default function Reception() {
   const router = useRouter();
+
   const [pseudo, setPseudo] = useState('');
   const [photo, setPhoto] = useState<string | null>(null);
   const [rooms, setRooms] = useState<Room[]>([]);
@@ -26,12 +33,17 @@ export default function Reception() {
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
   const [selectedRoom, setSelectedRoom] = useState<string>('');
+
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const socketRef = useRef<any>(null);
 
   useEffect(() => {
-    const socket = io('https://api.tools.gavago.fr/socketio/', { path: '/socketio', transports: ['websocket'] });
+    const socket = io('https://api.tools.gavago.fr/socketio/', { 
+      path: '/socketio', 
+      transports: ['websocket'],
+    });
+
     socketRef.current = socket;
 
     socket.on('connect', () => {
@@ -82,9 +94,9 @@ export default function Reception() {
         const json: RoomsApiResponse = await res.json();
         if (!mounted) return;
 
-        const parsed = Object.keys(json.data || {}).map(raw => {
+        const parsed: Room[] = Object.keys(json.data || {}).map(raw => {
           let decoded = raw;
-          try { decoded = decodeURIComponent(raw); } catch { }
+          try { decoded = decodeURIComponent(raw); } catch {}
           const clientsCount = Object.keys(json.data[raw].clients || {}).length;
           return { rawName: raw, name: decoded, clientsCount };
         });
