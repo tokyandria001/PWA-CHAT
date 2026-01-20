@@ -4,6 +4,7 @@ import styles from './page.module.css';
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { io, Socket } from 'socket.io-client';
+import Image from 'next/image';
 
 type ClientData = Record<string, unknown>;
 
@@ -36,7 +37,7 @@ export default function Reception() {
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
-  const socketRef = useRef<any>(null);
+  const socketRef = useRef<Socket | null>(null);
 
   useEffect(() => {
     const socket = io('https://api.tools.gavago.fr/socketio/', { 
@@ -228,7 +229,7 @@ export default function Reception() {
           className={styles.input}
         />
 
-        {photo && <img src={photo} className={styles.avatar} />}
+        {photo && <Image alt='' src={photo} className={styles.avatar} />}
 
         <button onClick={saveProfile} className={styles.button}>
           💾 Sauvegarder
@@ -267,7 +268,7 @@ export default function Reception() {
 
         <div className={styles.gallery}>
           {photos.map((p, i) => (
-            <img
+            <Image alt=''
               key={i}
               src={p}
               onClick={() => setPhoto(p)}
@@ -294,7 +295,7 @@ export default function Reception() {
               </>
             ) : (
               <>
-                <img src={preview} className={styles.video} />
+                <Image alt='' src={preview} className={styles.video} />
                 <button onClick={savePhoto} className={styles.button}>
                   ✅ Utiliser
                 </button>

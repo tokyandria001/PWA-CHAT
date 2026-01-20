@@ -22,10 +22,6 @@ export default function RoomPage() {
   const { room } = useParams();
   const router = useRouter();
 
-  // ⚠ Assurer que room est bien une string
-  const roomParam = Array.isArray(room) ? room[0] : room;
-  if (!roomParam) return <div>Room non spécifiée</div>; // Sécurité si undefined
-
   const [pseudo, setPseudo] = useState('');
   const [photo, setPhoto] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -35,6 +31,10 @@ export default function RoomPage() {
   const socketRef = useRef<Socket<DefaultEventsMap, DefaultEventsMap> | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const isLeavingRef = useRef(false);
+
+  // ⚠ Assurer que room est bien une string
+  const roomParam = Array.isArray(room) ? room[0] : room;
+  if (!roomParam) return <div>Room non spécifiée</div>; // Sécurité si undefined
 
   // Scroll automatique
   useEffect(() => {
