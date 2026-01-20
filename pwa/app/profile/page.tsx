@@ -34,6 +34,7 @@ export default function Reception() {
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
   const [selectedRoom, setSelectedRoom] = useState<string>('');
+  const [photoURL, setPhotoURL] = useState<string | null>(null);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -262,7 +263,7 @@ export default function Reception() {
               src={p}
               onClick={() => setPhoto(p)}
               className={`${styles.galleryImg} ${p === photo ? styles.galleryImgActive : ''
-                }`}
+                }`} 
             />
           ))}
         </div>
@@ -284,7 +285,7 @@ export default function Reception() {
               </>
             ) : (
               <>
-                <Image alt='' src={preview} className={styles.video} />
+                {preview && <Image alt='' src={preview} className={styles.video} />}
                 <button onClick={savePhoto} className={styles.button}>
                   ✅ Utiliser
                 </button>
