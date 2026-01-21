@@ -16,6 +16,15 @@ type Message = {
   dateEmis?: string;
 };
 
+// Typage pour le message image reçu via Socket.IO
+type ImageMessage = {
+  userId: string;
+  image: string;
+  content?: string;
+  roomName: string;
+  dateEmis: string;
+};
+
 const getRoomStorageKey = (room: string) => `room-messages-${room}`;
 
 export default function RoomPage() {
@@ -27,7 +36,6 @@ export default function RoomPage() {
   const [photo, setPhoto] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [content, setContent] = useState('');
-  const [, setImageFile] = useState<File | null>(null);
 
   const socketRef = useRef<Socket<DefaultEventsMap, DefaultEventsMap> | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -79,7 +87,7 @@ export default function RoomPage() {
     });
 
     // Messages avec image
-    socket.on('image-sended', (msg: any) => {
+    socket.on('image-sended', (msg: ImageMessage) => {
       const newMsg: Message = {
         pseudo: msg.userId,
         image: msg.image,
@@ -120,23 +128,18 @@ export default function RoomPage() {
     };
   }, [roomParam, pseudo]);
 
-
-
   // Envoi message
   const sendMessage = async () => {
     if (!socketRef.current) return;
-
     if (!content.trim()) return;
 
-    // Envoi via Socket.IO
     socketRef.current.emit('chat-msg', {
       pseudo,
-      content: content.trim() || undefined,
+      content: content.trim(),
       roomName: roomParam!
     });
 
     setContent('');
-    setImageFile(null);
   };
 
   const leaveRoom = () => {
@@ -145,7 +148,6 @@ export default function RoomPage() {
     socketRef.current = null;
     router.push('/profile');
   };
-
 
   return (
     <main className={styles.container}>
@@ -163,11 +165,15 @@ export default function RoomPage() {
               const isMine = m.pseudo === pseudo;
               return (
                 <div key={i} className={`${styles.message} ${isMine ? styles.mine : styles.other}`}>
-                  {isMine && photo && <Image src={photo} alt="profil" className={styles.messagePhoto} />}
+                  {isMine && photo && (
+                    <Image src={photo} alt="profil" width={40} height={40} className={styles.messagePhoto} />
+                  )}
                   <div className={styles.messageContent}>
                     <strong>{m.pseudo}</strong>
                     {m.content && <div>{m.content}</div>}
-                    {m.image && <Image src={m.image} alt="image envoyée" className={styles.messageImage} />}
+                    {m.image && (
+                      <Image src={m.image} alt="image envoyée" width={200} height={200} className={styles.messageImage} />
+                    )}
                     <small className={styles.messageDate}>{m.dateEmis}</small>
                   </div>
                 </div>
@@ -183,12 +189,6 @@ export default function RoomPage() {
               onKeyDown={e => e.key === 'Enter' && sendMessage()}
               placeholder="Votre message..."
               className={styles.input}
-            />
-            <input
-              type="file"
-              accept="image/*"
-              onChange={e => e.target.files && setImageFile(e.target.files[0])}
-              className={styles.fileInput}
             />
             <button onClick={sendMessage} className={`${styles.button} ${styles.buttonPrimary}`}>Envoyer</button>
           </div>
