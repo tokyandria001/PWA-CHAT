@@ -5,13 +5,11 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { io, Socket } from 'socket.io-client';
 import { DefaultEventsMap } from 'socket.io';
-import Image from 'next/image';
 
 // Typage des messages
 type Message = {
   pseudo: string;
   content?: string;
-  imageId?: string;
   image?: string | null;
   roomName: string;
   dateEmis?: string;
@@ -21,8 +19,9 @@ const getRoomStorageKey = (room: string) => `room-messages-${room}`;
 
 export default function RoomPage() {
   const router = useRouter();
+  const { room } = useParams();
+  const roomParam = Array.isArray(room) ? room[0] : room;
 
-  // -------------------- Hooks en tout début --------------------
   const [pseudo, setPseudo] = useState('');
   const [photo, setPhoto] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -33,15 +32,12 @@ export default function RoomPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const isLeavingRef = useRef(false);
 
-  const { room } = useParams();
-  const roomParam = Array.isArray(room) ? room[0] : room;
-
   // -------------------- Scroll automatique --------------------
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // -------------------- Chargement du profil et des messages --------------------
+  // -------------------- Chargement du profil et messages --------------------
   useEffect(() => {
     if (!roomParam) return;
 
@@ -64,27 +60,49 @@ export default function RoomPage() {
   useEffect(() => {
     if (!roomParam) return;
 
-    const socket: Socket<DefaultEventsMap, DefaultEventsMap> = io('https://api.tools.gavago.fr', {
-      transports: ['websocket'],
-      reconnection: false,
-    });
-
+    const socket = io('https://api.tools.gavago.fr', { transports: ['websocket'], reconnection: false });
     socketRef.current = socket;
 
     socket.on('connect', () => {
-      socketRef.current?.emit('chat-join-room', { pseudo, roomName: roomParam });
+      socket.emit('chat-join-room', { pseudo, roomName: roomParam });
     });
 
-    socket.on('chat-msg', async (msg: Message) => {
+    // Messages texte
+    socket.on('chat-msg', (msg: Message) => {
       msg.dateEmis = new Date().toLocaleTimeString();
-
-      if (msg.imageId) {
-        const image = await fetchImageById(msg.imageId);
-        if (image) msg.image = image;
-      }
-
       setMessages(prev => {
         const updated = [...prev, msg].slice(-50);
+        localStorage.setItem(getRoomStorageKey(roomParam), JSON.stringify(updated));
+        return updated;
+      });
+    });
+
+    // Messages avec image
+    socket.on('image-sended', (msg: any) => {
+      const newMsg: Message = {
+        pseudo: msg.userId,
+        image: msg.image,
+        content: msg.content || undefined,
+        roomName: msg.roomName,
+        dateEmis: new Date(msg.dateEmis).toLocaleTimeString()
+      };
+      setMessages(prev => {
+        const updated = [...prev, newMsg].slice(-50);
+        localStorage.setItem(getRoomStorageKey(roomParam), JSON.stringify(updated));
+        return updated;
+      });
+    });
+
+    // Notification déconnexion
+    socket.on('chat-disconnected', (options: { id: string; pseudo: string; roomName: string }) => {
+      const disconnectMsg: Message = {
+        pseudo: 'System',
+        content: `${options.pseudo} a quitté le salon.`,
+        roomName: options.roomName,
+        dateEmis: new Date().toLocaleTimeString()
+      };
+      setMessages(prev => {
+        const updated = [...prev, disconnectMsg].slice(-50);
         localStorage.setItem(getRoomStorageKey(roomParam), JSON.stringify(updated));
         return updated;
       });
@@ -101,7 +119,7 @@ export default function RoomPage() {
     };
   }, [roomParam, pseudo]);
 
-  // -------------------- Fonctions utilitaires --------------------
+
   const fileToBase64 = (file: File): Promise<string> =>
     new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -110,50 +128,17 @@ export default function RoomPage() {
       reader.readAsDataURL(file);
     });
 
-  const uploadImage = async (file: File): Promise<string | null> => {
-    if (!socketRef.current) return null;
-    const imageBase64 = await fileToBase64(file);
-
-    try {
-      const res = await fetch('https://api.tools.gavago.fr/socketio/api/images', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: socketRef.current.id, image_data: imageBase64 }),
-      });
-      const json: { success: boolean; [key: string]: unknown } = await res.json();
-      return json.success ? socketRef.current.id ?? null : null;
-    } catch {
-      return null;
-    }
-  };
-
-  const fetchImageById = async (id: string): Promise<string | null> => {
-    try {
-      const res = await fetch(`https://api.tools.gavago.fr/socketio/api/images/${id}`);
-      const json: { success: boolean; data_image?: string } = await res.json();
-      return json.success ? json.data_image ?? null : null;
-    } catch {
-      return null;
-    }
-  };
-
+  // Envoi message
   const sendMessage = async () => {
     if (!socketRef.current) return;
 
-    let imageId: string | undefined;
-    if (imageFile) {
-      const uploadedId = await uploadImage(imageFile);
-      if (!uploadedId) return alert("Erreur d'envoi de l'image");
-      imageId = uploadedId;
-    }
+    if (!content.trim()) return;
 
-    if (!content.trim() && !imageId) return;
-
+    // Envoi via Socket.IO
     socketRef.current.emit('chat-msg', {
       pseudo,
       content: content.trim() || undefined,
-      imageId,
-      roomName: roomParam!,
+      roomName: roomParam!
     });
 
     setContent('');
@@ -167,6 +152,7 @@ export default function RoomPage() {
     router.push('/profile');
   };
 
+
   return (
     <main className={styles.container}>
       {!roomParam ? (
@@ -175,9 +161,7 @@ export default function RoomPage() {
         <>
           <header className={styles.header}>
             <h2 className={styles.title}>Salon : {roomParam}</h2>
-            <button onClick={leaveRoom} className={`${styles.button} ${styles.buttonDanger}`}>
-              🚪 Quitter
-            </button>
+            <button onClick={leaveRoom} className={`${styles.button} ${styles.buttonDanger}`}>🚪 Quitter</button>
           </header>
 
           <section className={styles.messagesContainer}>
@@ -212,9 +196,7 @@ export default function RoomPage() {
               onChange={e => e.target.files && setImageFile(e.target.files[0])}
               className={styles.fileInput}
             />
-            <button onClick={sendMessage} className={`${styles.button} ${styles.buttonPrimary}`}>
-              📤 Envoyer
-            </button>
+            <button onClick={sendMessage} className={`${styles.button} ${styles.buttonPrimary}`}>Envoyer</button>
           </div>
         </>
       )}

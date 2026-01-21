@@ -34,7 +34,7 @@ export default function GallerySection({
       <h2 className={styles.sectionTitle}>Galerie</h2>
 
       <button onClick={onOpenCamera} className={styles.button}>
-        📸 Prendre une photo
+        Prendre une photo
       </button>
 
       <div className={styles.gallery}>
@@ -60,7 +60,7 @@ export default function GallerySection({
               <>
                 <video ref={videoRef} className={styles.video} autoPlay muted />
                 <button onClick={onTakePhoto} className={styles.button}>
-                  📷 Capturer
+                  Capturer
                 </button>
                 <button onClick={onCloseCamera} className={styles.button}>
                   ❌ Annuler
@@ -70,7 +70,7 @@ export default function GallerySection({
               <>
                 <Image src={preview} alt="aperçu" width={300} height={200} className={styles.video} />
                 <button onClick={onSavePhoto} className={styles.button}>
-                  ✅ Utiliser
+                  Utiliser
                 </button>
               </>
             )}

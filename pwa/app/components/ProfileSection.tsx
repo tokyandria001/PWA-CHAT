@@ -47,7 +47,7 @@ export default function ProfileSection({
       )}
 
       <button onClick={onSave} className={styles.button}>
-        💾 Sauvegarder
+        Sauvegarder
       </button>
     </section>
   );

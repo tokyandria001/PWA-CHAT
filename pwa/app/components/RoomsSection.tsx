@@ -38,7 +38,7 @@ export default function RoomsSection({
       </select>
 
       <button onClick={onJoin} className={styles.button}>
-        🚀 Entrer
+        Entrer
       </button>
     </section>
   );

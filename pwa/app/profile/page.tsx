@@ -38,13 +38,11 @@ export default function Reception() {
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
 
-
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const socketRef = useRef<Socket | null>(null);
 
-  // SOCKET.IO – CONNEXION
-
+  // Socket.IO
   useEffect(() => {
     const socket = io('https://api.tools.gavago.fr/socketio/', {
       path: '/socketio',
@@ -66,34 +64,39 @@ export default function Reception() {
       setRooms(parsed);
     });
 
-    return () => {socket.disconnect();};
+    return () => {
+      socket.disconnect();
+    };
   }, []);
 
-  // FETCH ROOMS (HTTP)
+  // Fetch rooms (HTTP)
   useEffect(() => {
     let mounted = true;
 
     const fetchRooms = async () => {
-      const res = await fetch(
-        'https://api.tools.gavago.fr/socketio/api/rooms',
-        { cache: 'no-store' }
-      );
-      const json: RoomsApiResponse = await res.json();
-      if (!mounted) return;
+      try {
+        const res = await fetch(
+          'https://api.tools.gavago.fr/socketio/api/rooms',
+          { cache: 'no-store' }
+        );
+        const json: RoomsApiResponse = await res.json();
+        if (!mounted) return;
 
-      const parsed = Object.keys(json.data).map(raw => ({
-        rawName: raw,
-        name: decodeURIComponent(raw),
-        clientsCount: Object.keys(json.data[raw].clients).length,
-      }));
+        const parsed = Object.keys(json.data).map(raw => ({
+          rawName: raw,
+          name: decodeURIComponent(raw),
+          clientsCount: Object.keys(json.data[raw].clients).length,
+        }));
 
-      parsed.sort(
-        (a, b) =>
-          b.clientsCount - a.clientsCount ||
-          a.name.localeCompare(b.name)
-      );
+        parsed.sort(
+          (a, b) =>
+            b.clientsCount - a.clientsCount || a.name.localeCompare(b.name)
+        );
 
-      setRooms(parsed);
+        setRooms(parsed);
+      } catch (err) {
+        console.error('Erreur fetch rooms', err);
+      }
     };
 
     fetchRooms();
@@ -105,7 +108,7 @@ export default function Reception() {
     };
   }, []);
 
-  // PROFIL & LOCAL STORAGE
+  // Profil & LocalStorage
   useEffect(() => {
     const storedProfile = localStorage.getItem('profile');
     if (storedProfile) {
@@ -113,9 +116,6 @@ export default function Reception() {
       setPseudo(parsed.pseudo || '');
       setPhoto(parsed.photo || null);
     }
-
-    const storedPhotos = localStorage.getItem('photos');
-    if (storedPhotos) setPhotos(JSON.parse(storedPhotos));
   }, []);
 
   const saveProfile = () => {
@@ -123,20 +123,25 @@ export default function Reception() {
     alert('Profil sauvegardé !');
   };
 
-  // CAMERA & GALERIE
+  // Gestion caméra & galerie
   const openCamera = async () => {
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: 'user' },
-    });
-    streamRef.current = stream;
-    setIsCameraOpen(true);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'user' },
+      });
+      streamRef.current = stream;
+      setIsCameraOpen(true);
 
-    setTimeout(() => {
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        videoRef.current.play();
-      }
-    }, 100);
+      setTimeout(() => {
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          videoRef.current.play();
+        }
+      }, 100);
+    } catch (err) {
+      alert('Impossible d’accéder à la caméra.');
+      console.error(err);
+    }
   };
 
   const takePhoto = () => {
@@ -144,22 +149,19 @@ export default function Reception() {
     const canvas = document.createElement('canvas');
     canvas.width = videoRef.current.videoWidth || 640;
     canvas.height = videoRef.current.videoHeight || 480;
-    canvas
-      .getContext('2d')
-      ?.drawImage(videoRef.current, 0, 0);
+    canvas.getContext('2d')?.drawImage(videoRef.current, 0, 0);
     setPreview(canvas.toDataURL('image/png'));
   };
 
   const savePhoto = () => {
     if (!preview) return;
     setPhoto(preview);
-    const updated = [preview, ...photos];
+
+    // Conserver seulement les 10 dernières images pour éviter quota
+    const updated = [preview, ...photos].slice(0, 3);
     setPhotos(updated);
 
-    localStorage.setItem(
-      'profile',
-      JSON.stringify({ pseudo, photo: preview })
-    );
+    localStorage.setItem('profile', JSON.stringify({ pseudo, photo: preview }));
     localStorage.setItem('photos', JSON.stringify(updated));
 
     closeCamera();
@@ -171,24 +173,33 @@ export default function Reception() {
     setPreview(null);
   };
 
-  // ENTREE ROOM
+  // Entrée dans un salon
   const connectToRoom = () => {
     if (!pseudo.trim()) return alert('Merci d’indiquer un pseudo.');
     if (!selectedRoom) return alert('Veuillez choisir une room.');
 
-    localStorage.setItem(
-      'profile',
-      JSON.stringify({ pseudo, photo })
-    );
+    localStorage.setItem('profile', JSON.stringify({ pseudo, photo }));
     router.push(`/room/${encodeURIComponent(selectedRoom)}`);
   };
 
-  function importImage(e: ChangeEvent<HTMLInputElement>): void {
-    throw new Error('Function not implemented.');
-  }
+  // Import depuis fichier
+  const importImage = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const imgData = reader.result as string;
+      setPhoto(imgData);
+
+      setPhotos(prev => [imgData, ...prev].slice(0, 3));
+
+      localStorage.setItem('profile', JSON.stringify({ pseudo, photo: imgData }));
+    };
+    reader.readAsDataURL(file);
+  };
 
   
-  // COMPONENTS
   return (
     <main className={styles.container}>
       <h1 className={styles.title}>Connexion</h1>
