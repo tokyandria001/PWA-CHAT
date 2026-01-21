@@ -32,12 +32,12 @@ export default function RoomPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const isLeavingRef = useRef(false);
 
-  // -------------------- Scroll automatique --------------------
+  // Scroll automatique
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // -------------------- Chargement du profil et messages --------------------
+  // Chargement du profil et messages
   useEffect(() => {
     if (!roomParam) return;
 
@@ -56,7 +56,7 @@ export default function RoomPage() {
     if (storedMessages) setMessages(JSON.parse(storedMessages) as Message[]);
   }, [roomParam, router]);
 
-  // -------------------- Connexion Socket.IO --------------------
+  // Connexion Socket.IO
   useEffect(() => {
     if (!roomParam) return;
 
@@ -120,13 +120,6 @@ export default function RoomPage() {
   }, [roomParam, pseudo]);
 
 
-  const fileToBase64 = (file: File): Promise<string> =>
-    new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
 
   // Envoi message
   const sendMessage = async () => {
