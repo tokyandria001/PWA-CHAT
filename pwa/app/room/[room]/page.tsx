@@ -27,7 +27,7 @@ export default function RoomPage() {
   const [photo, setPhoto] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [content, setContent] = useState('');
-  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [, setImageFile] = useState<File | null>(null);
 
   const socketRef = useRef<Socket<DefaultEventsMap, DefaultEventsMap> | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
