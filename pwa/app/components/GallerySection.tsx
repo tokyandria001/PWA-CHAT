@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { RefObject } from 'react';
+import styles from './component.module.css';
 
 type Props = {
   photos: string[];
@@ -29,41 +30,51 @@ export default function GallerySection({
   onSelectPhoto,
 }: Props) {
   return (
-    <section>
-      <h2>Galerie</h2>
+    <section className={styles.section}>
+      <h2 className={styles.sectionTitle}>Galerie</h2>
 
-      <button onClick={onOpenCamera}>📸 Prendre une photo</button>
+      <button onClick={onOpenCamera} className={styles.button}>
+        📸 Prendre une photo
+      </button>
 
-      <div>
+      <div className={styles.gallery}>
         {photos.map((p, i) => (
           <Image
             key={i}
             src={p}
-            alt=""
-            width={80}
-            height={80}
+            alt="photo utilisateur"
+            width={64}
+            height={64}
             onClick={() => onSelectPhoto(p)}
-            style={{
-              border: p === activePhoto ? '2px solid blue' : 'none',
-            }}
+            className={`${styles.galleryImg} ${
+              p === activePhoto ? styles.galleryImgActive : ''
+            }`}
           />
         ))}
       </div>
 
       {isCameraOpen && (
-        <div>
-          {!preview ? (
-            <>
-              <video ref={videoRef} autoPlay muted />
-              <button onClick={onTakePhoto}>📷 Capturer</button>
-              <button onClick={onCloseCamera}>❌ Annuler</button>
-            </>
-          ) : (
-            <>
-              <Image src={preview} alt="" width={300} height={200} />
-              <button onClick={onSavePhoto}>✅ Utiliser</button>
-            </>
-          )}
+        <div className={styles.overlay}>
+          <div className={styles.cameraBox}>
+            {!preview ? (
+              <>
+                <video ref={videoRef} className={styles.video} autoPlay muted />
+                <button onClick={onTakePhoto} className={styles.button}>
+                  📷 Capturer
+                </button>
+                <button onClick={onCloseCamera} className={styles.button}>
+                  ❌ Annuler
+                </button>
+              </>
+            ) : (
+              <>
+                <Image src={preview} alt="aperçu" width={300} height={200} className={styles.video} />
+                <button onClick={onSavePhoto} className={styles.button}>
+                  ✅ Utiliser
+                </button>
+              </>
+            )}
+          </div>
         </div>
       )}
     </section>

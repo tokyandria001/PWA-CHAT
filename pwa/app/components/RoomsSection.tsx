@@ -1,4 +1,5 @@
 'use client';
+import styles from './component.module.css';
 
 type Room = {
   rawName: string;
@@ -20,12 +21,13 @@ export default function RoomsSection({
   onJoin,
 }: Props) {
   return (
-    <section>
-      <h2>Salons</h2>
+    <section className={styles.section}>
+      <h2 className={styles.sectionTitle}>Salons</h2>
 
       <select
         value={selectedRoom}
         onChange={e => onSelectRoom(e.target.value)}
+        className={styles.input}
       >
         <option value="">-- Choisir une room --</option>
         {rooms.map(r => (
@@ -35,7 +37,9 @@ export default function RoomsSection({
         ))}
       </select>
 
-      <button onClick={onJoin}>🚀 Entrer</button>
+      <button onClick={onJoin} className={styles.button}>
+        🚀 Entrer
+      </button>
     </section>
   );
 }

@@ -1,0 +1,177 @@
+/* Profil */
+.avatar {
+  width: 110px;
+  height: 110px;
+  border-radius: 12px;
+  object-fit: cover;
+  border: 1px solid #cbd5e1;
+  background: #f8fafc;
+  align-self: center;
+}
+
+.photoBlock {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 1rem;
+  align-items: center;
+}
+
+.photoActions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+@media (max-width: 900px) {
+  .photoBlock {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+}
+
+/* ========= Galerie ========= */
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 64px);
+  gap: 0.5rem;
+  padding-top: 0.5rem;
+}
+
+.galleryImg {
+  width: 64px;
+  height: 64px;
+  border-radius: 8px;
+  object-fit: cover;
+  cursor: pointer;
+  border: 2px solid transparent;
+}
+
+.galleryImg:hover {
+  border-color: #94a3b8;
+}
+
+.galleryImgActive {
+  border-color: #2563eb;
+}
+
+/* ========= Overlay caméra ========= */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 6, 23, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.cameraBox {
+  background: white;
+  border-radius: 14px;
+  padding: 1.5rem;
+  width: 380px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.video {
+  width: 100%;
+  border-radius: 10px;
+  background: black;
+}
+
+/* ========= Liste de salons ========= */
+.roomRow {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+/* Option select */
+.roomSelect {
+  width: 100%;
+  padding: 0.7rem 0.8rem;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  font-size: 0.95rem;
+}
+
+/* ========= Chat ========= */
+.messagesContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 70vh;
+  overflow-y: auto;
+  padding: 0.5rem;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.message {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.messageContent {
+  background: #ffffff;
+  padding: 0.5rem 0.75rem;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  max-width: 70%;
+}
+
+.mine {
+  flex-direction: row-reverse;
+}
+
+.other {
+  flex-direction: row;
+}
+
+.messagePhoto {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.messageImage {
+  margin-top: 0.25rem;
+  width: 120px;
+  height: auto;
+  border-radius: 8px;
+}
+
+/* Formulaire d’envoi */
+.formGroup {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.input, .fileInput {
+  flex: 1;
+}
+
+.buttonPrimary {
+  background-color: #2563eb;
+  color: white;
+}
+
+.buttonPrimary:hover {
+  background-color: #1d4ed8;
+}
+
+.buttonDanger {
+  background-color: #dc2626;
+  color: white;
+}
+
+.buttonDanger:hover {
+  background-color: #b91c1c;
+}
+

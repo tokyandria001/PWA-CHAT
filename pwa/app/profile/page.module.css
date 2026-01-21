@@ -20,7 +20,7 @@
   margin-bottom: 1rem;
 }
 
-/* ========= Cartes ========= */
+/* ========= Section Card ========= */
 .section {
   background: #ffffff;
   border-radius: 14px;
@@ -70,90 +70,6 @@
   background-color: #1d4ed8;
 }
 
-/* ========= Profil / Avatar ========= */
-.avatar {
-  width: 110px;
-  height: 110px;
-  border-radius: 12px;
-  object-fit: cover;
-  border: 1px solid #cbd5e1;
-  background: #f8fafc;
-  align-self: center;
-}
-
-/* ========= Bloc Photo ========= */
-.photoBlock {
-  display: grid;
-  grid-template-columns: 110px 1fr;
-  gap: 1rem;
-  align-items: center;
-}
-
-.photoActions {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-/* ========= Galerie ========= */
-.gallery {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, 64px);
-  gap: 0.5rem;
-  padding-top: 0.5rem;
-}
-
-.galleryImg {
-  width: 64px;
-  height: 64px;
-  border-radius: 8px;
-  object-fit: cover;
-  cursor: pointer;
-  border: 2px solid transparent;
-}
-
-.galleryImg:hover {
-  border-color: #94a3b8;
-}
-
-.galleryImgActive {
-  border-color: #2563eb;
-}
-
-/* ========= Rooms ========= */
-.roomRow {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-}
-
-/* ========= Overlay caméra ========= */
-.overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(2, 6, 23, 0.7);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 999;
-}
-
-.cameraBox {
-  background: white;
-  border-radius: 14px;
-  padding: 1.5rem;
-  width: 380px;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.video {
-  width: 100%;
-  border-radius: 10px;
-  background: black;
-}
-
 /* ========= Responsive ========= */
 @media (max-width: 900px) {
   .container {
@@ -162,10 +78,5 @@
 
   .title {
     grid-column: span 1;
-  }
-
-  .photoBlock {
-    grid-template-columns: 1fr;
-    justify-items: center;
   }
 }

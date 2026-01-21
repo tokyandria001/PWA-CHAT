@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import styles from './component.module.css';
 
 type Props = {
   pseudo: string;
@@ -18,24 +19,36 @@ export default function ProfileSection({
   onSave,
 }: Props) {
   return (
-    <section>
-      <h2>Profil</h2>
+    <section className={styles.section}>
+      <h2 className={styles.sectionTitle}>Profil</h2>
 
       <input
         value={pseudo}
         onChange={e => onPseudoChange(e.target.value)}
         placeholder="Votre pseudo"
+        className={styles.input}
       />
 
       <input
         type="file"
         accept="image/*"
         onChange={onImportImage}
+        className={styles.input}
       />
 
-      {photo && <Image alt="" src={photo} width={100} height={100} />}
+      {photo && (
+        <Image
+          src={photo}
+          alt="Avatar"
+          width={110}
+          height={110}
+          className={styles.avatar}
+        />
+      )}
 
-      <button onClick={onSave}>💾 Sauvegarder</button>
+      <button onClick={onSave} className={styles.button}>
+        💾 Sauvegarder
+      </button>
     </section>
   );
 }
