@@ -167,10 +167,8 @@ export default function RoomPage() {
     router.push('/profile');
   };
 
-  // -------------------- JSX --------------------
   return (
     <main className={styles.container}>
-      {/* Affichage conditionnel si roomParam absent */}
       {!roomParam ? (
         <div>Room non spécifiée</div>
       ) : (
@@ -187,11 +185,11 @@ export default function RoomPage() {
               const isMine = m.pseudo === pseudo;
               return (
                 <div key={i} className={`${styles.message} ${isMine ? styles.mine : styles.other}`}>
-                  {isMine && photo && <Image src={photo} alt="profil" className={styles.messagePhoto} />}
+                  {isMine && photo && <img src={photo} alt="profil" className={styles.messagePhoto} />}
                   <div className={styles.messageContent}>
                     <strong>{m.pseudo}</strong>
                     {m.content && <div>{m.content}</div>}
-                    {m.image && <Image src={m.image} alt="image envoyée" className={styles.messageImage} />}
+                    {m.image && <img src={m.image} alt="image envoyée" className={styles.messageImage} />}
                     <small className={styles.messageDate}>{m.dateEmis}</small>
                   </div>
                 </div>
