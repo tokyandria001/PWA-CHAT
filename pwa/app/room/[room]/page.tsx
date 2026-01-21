@@ -5,6 +5,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { io, Socket } from 'socket.io-client';
 import { DefaultEventsMap } from 'socket.io';
+import Image from 'next/image';
 
 // Typage des messages
 type Message = {
@@ -162,11 +163,11 @@ export default function RoomPage() {
               const isMine = m.pseudo === pseudo;
               return (
                 <div key={i} className={`${styles.message} ${isMine ? styles.mine : styles.other}`}>
-                  {isMine && photo && <img src={photo} alt="profil" className={styles.messagePhoto} />}
+                  {isMine && photo && <Image src={photo} alt="profil" className={styles.messagePhoto} />}
                   <div className={styles.messageContent}>
                     <strong>{m.pseudo}</strong>
                     {m.content && <div>{m.content}</div>}
-                    {m.image && <img src={m.image} alt="image envoyée" className={styles.messageImage} />}
+                    {m.image && <Image src={m.image} alt="image envoyée" className={styles.messageImage} />}
                     <small className={styles.messageDate}>{m.dateEmis}</small>
                   </div>
                 </div>
