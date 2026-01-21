@@ -1,6 +1,5 @@
 'use client';
 
-import styles from './page.module.css';
 import { useState, useEffect, useRef, ChangeEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { io, Socket } from 'socket.io-client';
@@ -8,8 +7,7 @@ import { io, Socket } from 'socket.io-client';
 import ProfileSection from '../components/ProfileSection';
 import RoomsSection from '../components/RoomsSection';
 import GallerySection from '../components/GallerySection';
-
-type ClientData = Record<string, unknown>;
+import styles from './page.module.css';
 
 type Room = {
   rawName: string;
@@ -17,14 +15,10 @@ type Room = {
   clientsCount: number;
 };
 
-type RoomData = {
-  clients: ClientData;
-};
-
 type RoomsApiResponse = {
   success: boolean;
   metadata?: unknown;
-  data: Record<string, RoomData>;
+  data: Record<string, { clients: Record<string, unknown> }>;
 };
 
 export default function Reception() {
@@ -42,7 +36,7 @@ export default function Reception() {
   const streamRef = useRef<MediaStream | null>(null);
   const socketRef = useRef<Socket | null>(null);
 
-  // Socket.IO
+  // SOCKET.IO
   useEffect(() => {
     const socket = io('https://api.tools.gavago.fr/socketio/', {
       path: '/socketio',
@@ -64,12 +58,10 @@ export default function Reception() {
       setRooms(parsed);
     });
 
-    return () => {
-      socket.disconnect();
-    };
+    return () => {socket.disconnect();}
   }, []);
 
-  // Fetch rooms (HTTP)
+  // FETCH ROOMS
   useEffect(() => {
     let mounted = true;
 
@@ -90,12 +82,13 @@ export default function Reception() {
 
         parsed.sort(
           (a, b) =>
-            b.clientsCount - a.clientsCount || a.name.localeCompare(b.name)
+            b.clientsCount - a.clientsCount ||
+            a.name.localeCompare(b.name)
         );
 
         setRooms(parsed);
       } catch (err) {
-        console.error('Erreur fetch rooms', err);
+        console.error(err);
       }
     };
 
@@ -108,7 +101,7 @@ export default function Reception() {
     };
   }, []);
 
-  // Profil & LocalStorage
+  // LOCAL STORAGE PROFIL
   useEffect(() => {
     const storedProfile = localStorage.getItem('profile');
     if (storedProfile) {
@@ -116,14 +109,21 @@ export default function Reception() {
       setPseudo(parsed.pseudo || '');
       setPhoto(parsed.photo || null);
     }
+
+    const storedPhotos = localStorage.getItem('photos');
+    if (storedPhotos) setPhotos(JSON.parse(storedPhotos));
   }, []);
 
   const saveProfile = () => {
-    localStorage.setItem('profile', JSON.stringify({ pseudo, photo }));
-    alert('Profil sauvegardé !');
+    try {
+      localStorage.setItem('profile', JSON.stringify({ pseudo, photo }));
+      alert('Profil sauvegardé !');
+    } catch {
+      alert('Impossible de sauvegarder le profil, quota dépassé.');
+    }
   };
 
-  // Gestion caméra & galerie
+  // CAMERA & GALERIE
   const openCamera = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -138,9 +138,8 @@ export default function Reception() {
           videoRef.current.play();
         }
       }, 100);
-    } catch (err) {
+    } catch {
       alert('Impossible d’accéder à la caméra.');
-      console.error(err);
     }
   };
 
@@ -149,20 +148,21 @@ export default function Reception() {
     const canvas = document.createElement('canvas');
     canvas.width = videoRef.current.videoWidth || 640;
     canvas.height = videoRef.current.videoHeight || 480;
-    canvas.getContext('2d')?.drawImage(videoRef.current, 0, 0);
-    setPreview(canvas.toDataURL('image/png'));
+    canvas.getContext('2d')?.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+    setPreview(canvas.toDataURL('image/jpeg', 0.7));
   };
 
   const savePhoto = () => {
     if (!preview) return;
     setPhoto(preview);
+    setPhotos(prev => [preview, ...prev].slice(0, 3));
 
-    // Conserver seulement les 10 dernières images pour éviter quota
-    const updated = [preview, ...photos].slice(0, 3);
-    setPhotos(updated);
-
-    localStorage.setItem('profile', JSON.stringify({ pseudo, photo: preview }));
-    localStorage.setItem('photos', JSON.stringify(updated));
+    try {
+      localStorage.setItem('profile', JSON.stringify({ pseudo, photo: preview }));
+      localStorage.setItem('photos', JSON.stringify([preview, ...photos].slice(0, 3)));
+    } catch {
+      alert('Impossible de sauvegarder la photo, quota dépassé.');
+    }
 
     closeCamera();
   };
@@ -173,7 +173,29 @@ export default function Reception() {
     setPreview(null);
   };
 
-  // Entrée dans un salon
+  // IMPORT IMAGE
+  const importImage = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (!reader.result) return;
+      const imgData = reader.result as string;
+      setPhoto(imgData);
+      setPhotos(prev => [imgData, ...prev].slice(0, 3));
+
+      try {
+        localStorage.setItem('profile', JSON.stringify({ pseudo, photo: imgData }));
+        localStorage.setItem('photos', JSON.stringify([imgData, ...photos].slice(0, 3)));
+      } catch {
+        alert('Impossible de sauvegarder l’image, quota dépassé.');
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // ENTREE DANS LA ROOM
   const connectToRoom = () => {
     if (!pseudo.trim()) return alert('Merci d’indiquer un pseudo.');
     if (!selectedRoom) return alert('Veuillez choisir une room.');
@@ -182,24 +204,7 @@ export default function Reception() {
     router.push(`/room/${encodeURIComponent(selectedRoom)}`);
   };
 
-  // Import depuis fichier
-  const importImage = (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      const imgData = reader.result as string;
-      setPhoto(imgData);
-
-      setPhotos(prev => [imgData, ...prev].slice(0, 3));
-
-      localStorage.setItem('profile', JSON.stringify({ pseudo, photo: imgData }));
-    };
-    reader.readAsDataURL(file);
-  };
-
-  
   return (
     <main className={styles.container}>
       <h1 className={styles.title}>Connexion</h1>

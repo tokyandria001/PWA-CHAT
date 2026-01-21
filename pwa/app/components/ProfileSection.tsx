@@ -22,33 +22,41 @@ export default function ProfileSection({
     <section className={styles.section}>
       <h2 className={styles.sectionTitle}>Profil</h2>
 
-      <input
-        value={pseudo}
-        onChange={e => onPseudoChange(e.target.value)}
-        placeholder="Votre pseudo"
-        className={styles.input}
-      />
+      <div className={styles.photoBlock}>
+        <div className={styles.avatarWrapper}>
+          {photo ? (
+            <Image
+              src={photo}
+              alt="Avatar"
+              width={110}
+              height={110}
+              className={styles.avatar}
+            />
+          ) : (
+            <div className={styles.avatarPlaceholder}>A</div>
+          )}
+        </div>
 
-      <input
-        type="file"
-        accept="image/*"
-        onChange={onImportImage}
-        className={styles.input}
-      />
+        <div className={styles.photoActions}>
+          <input
+            value={pseudo}
+            onChange={e => onPseudoChange(e.target.value)}
+            placeholder="Votre pseudo"
+            className={styles.input}
+          />
 
-      {photo && (
-        <Image
-          src={photo}
-          alt="Avatar"
-          width={110}
-          height={110}
-          className={styles.avatar}
-        />
-      )}
+          <input
+            type="file"
+            accept="image/*"
+            onChange={onImportImage}
+            className={styles.input}
+          />
 
-      <button onClick={onSave} className={styles.button}>
-        Sauvegarder
-      </button>
+          <button onClick={onSave} className={styles.button}>
+            Sauvegarder
+          </button>
+        </div>
+      </div>
     </section>
   );
 }

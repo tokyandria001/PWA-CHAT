@@ -1,82 +1,46 @@
-/* ========= Layout global ========= */
+/* Container principal */
 .container {
-  max-width: 1280px;
-  margin: auto;
-  padding: 2rem;
-  display: grid;
-  grid-template-columns: 360px 1fr;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
   gap: 2rem;
-  background: #f1f5f9;
-  min-height: 100vh;
+  font-family: 'Inter', sans-serif;
 }
 
-/* ========= Titre ========= */
+/* Titre de la page */
 .title {
-  grid-column: span 2;
-  text-align: left;
   font-size: 2rem;
   font-weight: 700;
-  color: #020617;
+  text-align: center;
   margin-bottom: 1rem;
+  color: #1e293b;
 }
 
-/* ========= Section Card ========= */
+/* Sections communes */
 .section {
-  background: #ffffff;
-  border-radius: 14px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
   padding: 1.5rem;
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  border: 1px solid #e2e8f0;
 }
 
 .sectionTitle {
-  font-size: 1.1rem;
+  font-size: 1.25rem;
   font-weight: 600;
-  color: #0f172a;
-  padding-bottom: 0.5rem;
+  margin-bottom: 0.5rem;
+  color: #1e293b;
   border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 0.25rem;
 }
 
-/* ========= Inputs ========= */
-.input {
-  width: 100%;
-  padding: 0.7rem 0.8rem;
-  border-radius: 8px;
-  border: 1px solid #cbd5e1;
-  background: #ffffff;
-  font-size: 0.95rem;
-}
-
-.input:focus {
-  outline: none;
-  border-color: #2563eb;
-}
-
-/* ========= Boutons ========= */
-.button {
-  padding: 0.7rem;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  font-size: 0.95rem;
-  font-weight: 500;
-  background-color: #2563eb;
-  color: white;
-}
-
-.button:hover {
-  background-color: #1d4ed8;
-}
-
-/* ========= Responsive ========= */
+/* Responsive : empile les sections sur mobile */
 @media (max-width: 900px) {
   .container {
-    grid-template-columns: 1fr;
-  }
-
-  .title {
-    grid-column: span 1;
+    padding: 1rem;
   }
 }

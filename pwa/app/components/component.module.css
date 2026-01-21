@@ -1,12 +1,38 @@
-/* Profil */
+/* ================= Profil ================= */
+/* ===== Profil ===== */
+.avatarWrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 .avatar {
   width: 110px;
   height: 110px;
-  border-radius: 12px;
+  border-radius: 50%;
   object-fit: cover;
-  border: 1px solid #cbd5e1;
+  border: 2px solid #cbd5e1;
   background: #f8fafc;
-  align-self: center;
+  transition: transform 0.2s, border-color 0.2s;
+}
+
+.avatar:hover {
+  transform: scale(1.05);
+  border-color: #2563eb;
+}
+
+/* Placeholder si pas de photo */
+.avatarPlaceholder {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  background: #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  font-size: 2rem;
+  font-weight: bold;
 }
 
 .photoBlock {
@@ -14,22 +40,61 @@
   grid-template-columns: 110px 1fr;
   gap: 1rem;
   align-items: center;
+  margin-top: 1rem;
 }
 
 .photoActions {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.75rem;
 }
 
-@media (max-width: 900px) {
+.input {
+  padding: 0.65rem 0.8rem;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.input:focus {
+  border-color: #2563eb;
+}
+
+/* Bouton */
+.button {
+  background-color: #2563eb;
+  color: white;
+  border-radius: 8px;
+  padding: 0.6rem 1rem;
+  font-size: 1rem;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+.button:hover {
+  background-color: #1d4ed8;
+  transform: scale(1.05);
+}
+
+/* Responsive pour petits écrans */
+@media (max-width: 600px) {
   .photoBlock {
     grid-template-columns: 1fr;
     justify-items: center;
+    text-align: center;
+  }
+
+  .photoActions {
+    align-items: center;
   }
 }
 
-/* ========= Galerie ========= */
+/* ================= Galerie ================= */
+/* ================= Galerie ================= */
 .gallery {
   display: grid;
   grid-template-columns: repeat(auto-fill, 64px);
@@ -40,13 +105,15 @@
 .galleryImg {
   width: 64px;
   height: 64px;
-  border-radius: 8px;
+  border-radius: 12px;
   object-fit: cover;
   cursor: pointer;
   border: 2px solid transparent;
+  transition: transform 0.2s, border-color 0.2s;
 }
 
 .galleryImg:hover {
+  transform: scale(1.1);
   border-color: #94a3b8;
 }
 
@@ -54,7 +121,7 @@
   border-color: #2563eb;
 }
 
-/* ========= Overlay caméra ========= */
+/* ================= Overlay caméra ================= */
 .overlay {
   position: fixed;
   inset: 0;
@@ -67,38 +134,79 @@
 
 .cameraBox {
   background: white;
-  border-radius: 14px;
+  border-radius: 16px;
   padding: 1.5rem;
   width: 380px;
+  max-width: 90%;
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+  align-items: center;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.cameraActions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  width: 100%;
 }
 
 .video {
   width: 100%;
-  border-radius: 10px;
+  border-radius: 12px;
   background: black;
 }
 
-/* ========= Liste de salons ========= */
-.roomRow {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-}
-
-/* Option select */
+/* ================= Liste de salons ================= */
 .roomSelect {
   width: 100%;
-  padding: 0.7rem 0.8rem;
+  padding: 0.75rem 0.9rem;
   border-radius: 8px;
   border: 1px solid #cbd5e1;
   background: #ffffff;
   font-size: 0.95rem;
+  transition: border-color 0.2s;
+  margin-bottom: 0.75rem;
 }
 
-/* ========= Chat ========= */
+.roomSelect:focus {
+  border-color: #2563eb;
+  outline: none;
+}
+
+
+/* ================= Overlay caméra ================= */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 6, 23, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.cameraBox {
+  background: white;
+  border-radius: 16px;
+  padding: 1.5rem;
+  width: 380px;
+  max-width: 90%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  align-items: center;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.video {
+  width: 100%;
+  border-radius: 12px;
+  background: black;
+}
+
+/* ================= Chat ================= */
 .messagesContainer {
   display: flex;
   flex-direction: column;
@@ -114,14 +222,16 @@
 .message {
   display: flex;
   gap: 0.5rem;
+  transition: transform 0.1s;
 }
 
 .messageContent {
   background: #ffffff;
   padding: 0.5rem 0.75rem;
-  border-radius: 10px;
+  border-radius: 12px;
   border: 1px solid #e2e8f0;
   max-width: 70%;
+  word-wrap: break-word;
 }
 
 .mine {
@@ -135,7 +245,7 @@
 .messagePhoto {
   width: 40px;
   height: 40px;
-  border-radius: 8px;
+  border-radius: 50%;
   object-fit: cover;
 }
 
@@ -144,34 +254,73 @@
   width: 120px;
   height: auto;
   border-radius: 8px;
+  object-fit: cover;
 }
 
-/* Formulaire d’envoi */
+/* ================= Formulaire d’envoi ================= */
 .formGroup {
   display: flex;
   gap: 0.5rem;
   margin-top: 0.75rem;
 }
 
-.input, .fileInput {
+.input,
+.fileInput {
   flex: 1;
+  padding: 0.65rem 0.8rem;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.input:focus,
+.fileInput:focus {
+  border-color: #2563eb;
+}
+
+/* ================= Boutons ================= */
+
+.button {
+  background-color: #2563eb;
+  color: white;
+  border-radius: 8px;
+  padding: 0.6rem 1rem;
+  font-size: 1rem;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+.button:hover {
+  background-color: #1d4ed8;
+  transform: scale(1.05);
 }
 
 .buttonPrimary {
   background-color: #2563eb;
   color: white;
+  border-radius: 8px;
+  padding: 0.6rem 1rem;
+  transition: background-color 0.2s, transform 0.1s;
 }
 
 .buttonPrimary:hover {
   background-color: #1d4ed8;
+  transform: scale(1.05);
 }
 
 .buttonDanger {
   background-color: #dc2626;
   color: white;
+  border-radius: 8px;
+  padding: 0.6rem 1rem;
+  transition: background-color 0.2s, transform 0.1s;
 }
 
 .buttonDanger:hover {
   background-color: #b91c1c;
+  transform: scale(1.05);
 }
-

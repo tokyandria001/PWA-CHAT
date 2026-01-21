@@ -166,13 +166,13 @@ export default function RoomPage() {
               return (
                 <div key={i} className={`${styles.message} ${isMine ? styles.mine : styles.other}`}>
                   {isMine && photo && (
-                    <Image src={photo} alt="profil" width={40} height={40} className={styles.messagePhoto} />
+                    <img src={photo} alt="profil" width={40} height={40} className={styles.messagePhoto} />
                   )}
                   <div className={styles.messageContent}>
                     <strong>{m.pseudo}</strong>
                     {m.content && <div>{m.content}</div>}
                     {m.image && (
-                      <Image src={m.image} alt="image envoyée" width={200} height={200} className={styles.messageImage} />
+                      <img src={m.image} alt="image envoyée" width={200} height={200} className={styles.messageImage} />
                     )}
                     <small className={styles.messageDate}>{m.dateEmis}</small>
                   </div>

@@ -45,10 +45,10 @@ export default function GallerySection({
             alt="photo utilisateur"
             width={64}
             height={64}
-            onClick={() => onSelectPhoto(p)}
             className={`${styles.galleryImg} ${
               p === activePhoto ? styles.galleryImgActive : ''
             }`}
+            onClick={() => onSelectPhoto(p)}
           />
         ))}
       </div>
@@ -59,16 +59,18 @@ export default function GallerySection({
             {!preview ? (
               <>
                 <video ref={videoRef} className={styles.video} autoPlay muted />
-                <button onClick={onTakePhoto} className={styles.button}>
-                  Capturer
-                </button>
-                <button onClick={onCloseCamera} className={styles.button}>
-                  ❌ Annuler
-                </button>
+                <div className={styles.cameraActions}>
+                  <button onClick={onTakePhoto} className={styles.button}>
+                    Capturer
+                  </button>
+                  <button onClick={onCloseCamera} className={`${styles.button} ${styles.buttonDanger}`}>
+                    Annuler
+                  </button>
+                </div>
               </>
             ) : (
               <>
-                <Image src={preview} alt="aperçu" width={300} height={200} className={styles.video} />
+                <Image src={preview} alt="Aperçu" width={300} height={200} className={styles.video} />
                 <button onClick={onSavePhoto} className={styles.button}>
                   Utiliser
                 </button>

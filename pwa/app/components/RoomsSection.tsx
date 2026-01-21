@@ -27,7 +27,7 @@ export default function RoomsSection({
       <select
         value={selectedRoom}
         onChange={e => onSelectRoom(e.target.value)}
-        className={styles.input}
+        className={styles.roomSelect}
       >
         <option value="">-- Choisir une room --</option>
         {rooms.map(r => (
