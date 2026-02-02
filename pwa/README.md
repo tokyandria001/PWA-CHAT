@@ -1,36 +1,96 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# PWA-CHAT
 
-## Getting Started
+## Présentation
 
-First, run the development server:
+**PWA Chat** est une application de chat en temps réel qui permet aux utilisateurs de :  
+- Se créer un profil avec pseudo et photo.  
+- Rejoindre des salons de discussion (rooms).  
+- Envoyer des messages texte et des images.  
+- Voir les messages et images des autres utilisateurs instantanément grâce à **Socket.IO**.  
+
+L’application est conçue comme une **Progressive Web App (PWA)** pour être installable sur mobile et desktop.
+
+---
+
+## Technologies utilisées
+
+| Catégorie               | Technologie                          |
+|-------------------------|--------------------------------------|
+| Frontend                | Next.js 15 (React + TypeScript)       |
+| Styles                  | CSS Modules                           |
+| Communication temps réel | Socket.IO                             |
+| Stockage local          | `localStorage`                        |
+| Gestion des images      | Base64, Canvas pour redimensionnement |
+| Déploiement             | VPS avec SSH et PM2, CI/CD GitHub Actions |
+
+---
+
+## Fonctionnalités principales
+
+### 1. Profil utilisateur
+- Saisie d’un pseudo.  
+- Choix d’une photo via caméra ou importation.  
+- Sauvegarde dans `localStorage`.  
+- Prévisualisation des photos dans une galerie.  
+
+### 2. Gestion des salons (Rooms)
+- Liste dynamique des salons disponibles.  
+- Nombre de participants affiché pour chaque room.  
+- Rejoindre une room pour discuter en temps réel.  
+
+### 3. Chat en temps réel
+- Envoi de messages texte et images.  
+- Affichage instantané des messages et images des autres utilisateurs.  
+- Historique limité à 50 messages par salon (stocké dans `localStorage`).  
+- Notification visuelle lors de l’envoi d’une photo.
+
+### 4. Caméra et galerie
+- Prise de photo via webcam.  
+- Redimensionnement automatique pour éviter les dépassements de quota `localStorage`.  
+- Sélection rapide d’une photo de profil depuis la galerie.  
+
+---
+
+## Installation et lancement
+
+1. **Cloner le dépôt**
 
 ```bash
+git clone https://github.com/...
+cd PWA-CHAT
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
+### Tests unitaires
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Ce projet contient **4 suites de tests unitaires**, couvrant les principales fonctionnalités de l’application :
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **GallerySection**  
+  Vérifie l’affichage de la galerie, la sélection des photos, l’ouverture de la caméra, la capture et la sauvegarde des images.
 
-## Learn More
+- **ProfileSection (Avatar & pseudo)**  
+  Teste la modification du pseudo, l’import d’une image de profil et la sauvegarde des informations utilisateur.
 
-To learn more about Next.js, take a look at the following resources:
+- **RoomsSection (Salons de discussion)**  
+  Valide l’affichage des salons disponibles, la sélection d’une room et l’action pour rejoindre un salon.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **Reception (logique principale de l’application)**  
+  Couvre la logique globale :
+  - affichage des différentes sections (Profil, Salons, Galerie)
+  - gestion du pseudo
+  - sélection et connexion à un salon
+  - interaction avec la caméra
+  - sauvegarde du profil dans le `localStorage`
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Les tests sont écrits avec **Vitest** et **@testing-library/react**, en simulant :
+- le routeur Next.js (`next/navigation`)
+- les appels réseau (`fetch`)
+- les interactions utilisateur (clics, saisies, changements d’état)
 
-## Deploy on Vercel
+L’ensemble des tests peut être exécuté avec la commande suivante :
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+npm test
