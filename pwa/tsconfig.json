@@ -28,7 +28,8 @@
       ]
     },
     "types": [
-      "node"
+      "node",
+      "jest"
     ]
   },
   "include": [
@@ -36,7 +37,7 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts"
-  ],
+, "jest.config.js", "jest.setup.js"  ],
   "exclude": [
     "node_modules"
   ]

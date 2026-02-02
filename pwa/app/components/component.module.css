@@ -168,6 +168,7 @@
   font-size: 0.95rem;
   transition: border-color 0.2s;
   margin-bottom: 0.75rem;
+  color: black;
 }
 
 .roomSelect:focus {

@@ -50,6 +50,7 @@ export default function ProfileSection({
             accept="image/*"
             onChange={onImportImage}
             className={styles.input}
+            data-testid="file-input"
           />
 
           <button onClick={onSave} className={styles.button}>
