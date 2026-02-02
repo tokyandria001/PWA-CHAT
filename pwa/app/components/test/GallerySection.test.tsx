@@ -17,6 +17,7 @@ describe('GallerySection', () => {
     onSelectPhoto: vi.fn(),
   };
 
+  // Test 1 : rendu du titre et des photos
   it('renders the gallery title and photos', () => {
     render(<GallerySection {...defaultProps} />);
     expect(screen.getByText(/Galerie/i)).toBeInTheDocument();
@@ -24,12 +25,14 @@ describe('GallerySection', () => {
     expect(images.length).toBe(defaultProps.photos.length);
   });
 
+  // Test 2 : ouverture de la caméra
   it('calls onOpenCamera when "Prendre une photo" is clicked', () => {
     render(<GallerySection {...defaultProps} />);
     fireEvent.click(screen.getByText(/Prendre une photo/i));
     expect(defaultProps.onOpenCamera).toHaveBeenCalled();
   });
 
+  // Test 3 : sélection d'une photo
   it('calls onSelectPhoto when a photo is clicked', () => {
     render(<GallerySection {...defaultProps} />);
     const firstPhoto = screen.getAllByRole('img')[0];
@@ -37,12 +40,14 @@ describe('GallerySection', () => {
     expect(defaultProps.onSelectPhoto).toHaveBeenCalledWith('photo1.png');
   });
 
+  // Test 4 : rendu des contrôles caméra si caméra ouverte
   it('renders camera controls when isCameraOpen is true', () => {
     render(<GallerySection {...defaultProps} isCameraOpen={true} />);
     expect(screen.getByText(/Capturer/i)).toBeInTheDocument();
     expect(screen.getByText(/Annuler/i)).toBeInTheDocument();
   });
 
+  // Test 5 : rendu de l'aperçu et bouton "Utiliser"
   it('renders preview and "Utiliser" button when preview is set', () => {
     render(<GallerySection {...defaultProps} isCameraOpen={true} preview="preview.png" />);
     expect(screen.getByAltText(/Aperçu/i)).toBeInTheDocument();
