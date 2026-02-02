@@ -62,3 +62,35 @@ npm install
 npm run dev
 
 ```
+
+---
+### Tests unitaires
+
+Ce projet contient **4 suites de tests unitaires**, couvrant les principales fonctionnalités de l’application :
+
+- **GallerySection**  
+  Vérifie l’affichage de la galerie, la sélection des photos, l’ouverture de la caméra, la capture et la sauvegarde des images.
+
+- **ProfileSection (Avatar & pseudo)**  
+  Teste la modification du pseudo, l’import d’une image de profil et la sauvegarde des informations utilisateur.
+
+- **RoomsSection (Salons de discussion)**  
+  Valide l’affichage des salons disponibles, la sélection d’une room et l’action pour rejoindre un salon.
+
+- **Reception (logique principale de l’application)**  
+  Couvre la logique globale :
+  - affichage des différentes sections (Profil, Salons, Galerie)
+  - gestion du pseudo
+  - sélection et connexion à un salon
+  - interaction avec la caméra
+  - sauvegarde du profil dans le `localStorage`
+
+Les tests sont écrits avec **Vitest** et **@testing-library/react**, en simulant :
+- le routeur Next.js (`next/navigation`)
+- les appels réseau (`fetch`)
+- les interactions utilisateur (clics, saisies, changements d’état)
+
+L’ensemble des tests peut être exécuté avec la commande suivante :
+
+```bash
+npm test
